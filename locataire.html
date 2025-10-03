@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carnet de Factures de Logement - Connexion</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2ecc71;
+            --secondary-dark: #27ae60;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --light-bg: #f8f9fa;
+            --dark-text: #333;
+            --medium-text: #555;
+            --light-text: #777;
+            --border-color: #ddd;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --radius: 8px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--dark-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        
+        .login-container h1 {
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .login-form {
+            text-align: left;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--medium-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .login-button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .error-message {
+            color: var(--danger-color);
+            margin-top: 15px;
+            padding: 10px;
+            background-color: rgba(244, 67, 54, 0.1);
+            border-radius: var(--radius);
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .app-container {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        header h1 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        .logout-button {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s;
+        }
+        
+        .logout-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .save-status {
+            font-size: 14px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: var(--light-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .tab:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-bottom: 3px solid var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-section h2 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            flex: 1;
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--medium-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+        
+        button.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        button.primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        button.secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        button.secondary:hover {
+            background-color: var(--secondary-dark);
+        }
+        
+        button.danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        button.danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .item-row {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: var(--radius);
+            margin-bottom: 15px;
+            background-color: var(--light-bg);
+        }
+        
+        .invoice-preview {
+            margin-top: 30px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 30px;
+        }
+        
+        .invoice-preview h2 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .invoice-container {
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: var(--radius);
+            background-color: white;
+            margin-bottom: 20px;
+        }
+        
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .invoice-title {
+            text-align: center;
+        }
+        
+        .invoice-title h1 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+        
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .invoice-table th, .invoice-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .invoice-table th {
+            background-color: var(--light-bg);
+            font-weight: 600;
+        }
+        
+        .total-row {
+            font-weight: 600;
+            background-color: var(--light-bg);
+        }
+        
+        .bills-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .bill-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            background-color: white;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .bill-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+        
+        .bill-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .bill-card p {
+            margin: 8px 0;
+        }
+        
+        .bill-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .bill-actions button {
+            flex: 1;
+        }
+        
+        .chart-container {
+            margin-top: 30px;
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background-color: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+        
+        .summary-card h3 {
+            margin-top: 0;
+            color: var(--medium-text);
+            font-size: 16px;
+        }
+        
+        .summary-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .summary-card.primary .value {
+            color: var(--primary-color);
+        }
+        
+        .summary-card.secondary .value {
+            color: var(--secondary-color);
+        }
+        
+        .summary-card.warning .value {
+            color: var(--warning-color);
+        }
+        
+        .summary-card.danger .value {
+            color: var(--danger-color);
+        }
+        
+        .month-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .month-selector label {
+            font-weight: 500;
+        }
+        
+        .backup-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--light-bg);
+            border-radius: var(--radius);
+        }
+        
+        .backup-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1;
+                min-width: 120px;
+                justify-content: center;
+            }
+            
+            .invoice-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .actions button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .bill-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Écran de connexion -->
+    <div class="login-container" id="loginContainer">
+        <h1><i class="fas fa-home"></i> Connexion</h1>
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="username"><i class="fas fa-user"></i> Identifiant</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> Mot de passe</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="login-button"><i class="fas fa-sign-in-alt"></i> Se connecter</button>
+            <div class="error-message" id="errorMessage"><i class="fas fa-exclamation-triangle"></i> Identifiant ou mot de passe incorrect</div>
+        </form>
+    </div>
+
+    <!-- Application principale -->
+    <div class="app-container" id="appContainer">
+        <header>
+            <h1><i class="fas fa-home"></i> Carnet de Factures de Logement</h1>
+            <div class="user-info">
+                <div class="save-status" id="saveStatus">
+                    <i class="fas fa-check-circle"></i> Sauvegardé
+                </div>
+                <div class="user-avatar" id="userAvatar">JD</div>
+                <div>
+                    <div class="user-name" id="userName">Jean Dupont</div>
+                    <div class="user-email" id="userEmail">jean.dupont@example.com</div>
+                </div>
+                <button class="logout-button" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+            </div>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</div>
+            <div class="tab" data-tab="add-bill"><i class="fas fa-plus-circle"></i> Ajouter une Facture</div>
+            <div class="tab" data-tab="bills"><i class="fas fa-file-invoice"></i> Mes Factures</div>
+            <div class="tab" data-tab="analysis"><i class="fas fa-chart-bar"></i> Analyse des Dépenses</div>
+            <div class="tab" data-tab="backup"><i class="fas fa-shield-alt"></i> Sauvegarde</div>
+        </div>
+        
+        <!-- Onglet Tableau de bord -->
+        <div id="dashboard-tab" class="tab-content active">
+            <h2><i class="fas fa-tachometer-alt"></i> Tableau de Bord</h2>
+            
+            <div class="summary-cards">
+                <div class="summary-card primary">
+                    <h3>Dépenses du mois</h3>
+                    <div class="value" id="monthlyExpenses">0 FCFA</div>
+                    <p>Moyenne: <span id="averageExpenses">0 FCFA</span></p>
+                </div>
+                <div class="summary-card secondary">
+                    <h3>Factures payées</h3>
+                    <div class="value" id="paidBills">0</div>
+                    <p>Sur <span id="totalBills">0</span> factures</p>
+                </div>
+                <div class="summary-card warning">
+                    <h3>Dépense principale</h3>
+                    <div class="value" id="mainExpense">Loyer</div>
+                    <p><span id="mainExpenseAmount">0 FCFA</span></p>
+                </div>
+                <div class="summary-card danger">
+                    <h3>Dépenses en retard</h3>
+                    <div class="value" id="overdueBills">0</div>
+                    <p>Montant: <span id="overdueAmount">0 FCFA</span></p>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Évolution des dépenses</h3>
+                <canvas id="expensesChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Répartition des dépenses</h3>
+                <canvas id="expensesPieChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Onglet Ajouter une facture -->
+        <div id="add-bill-tab" class="tab-content">
+            <div class="form-section">
+                <h2><i class="fas fa-file-alt"></i> Nouvelle Facture</h2>
+                <form id="billForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="billType"><i class="fas fa-tag"></i> Type de facture</label>
+                            <select id="billType" required>
+                                <option value="">Sélectionnez...</option>
+                                <option value="loyer">Loyer</option>
+                                <option value="eau">Eau</option>
+                                <option value="electricite">Électricité</option>
+                                <option value="internet">Internet</option>
+                                <option value="gaz">Gaz</option>
+                                <option value="entretien">Entretien</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="billDate"><i class="fas fa-calendar-alt"></i> Date de la facture</label>
+                            <input type="date" id="billDate" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="billAmount"><i class="fas fa-money-bill-wave"></i> Montant (FCFA)</label>
+                            <input type="number" id="billAmount" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dueDate"><i class="fas fa-clock"></i> Date d'échéance</label>
+                            <input type="date" id="dueDate" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="billDescription"><i class="fas fa-align-left"></i> Description</label>
+                            <textarea id="billDescription" rows="3"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ownerName"><i class="fas fa-user-tie"></i> Nom du propriétaire</label>
+                            <input type="text" id="ownerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ownerContact"><i class="fas fa-phone"></i> Contact du propriétaire</label>
+                            <input type="text" id="ownerContact" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="invoiceNumber"><i class="fas fa-hashtag"></i> Numéro de facture</label>
+                            <input type="text" id="invoiceNumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentStatus"><i class="fas fa-check-circle"></i> Statut de paiement</label>
+                            <select id="paymentStatus" required>
+                                <option value="paye">Payé</option>
+                                <option value="en_retard">En retard</option>
+                                <option value="en_attente">En attente</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="paymentDate"><i class="fas fa-calendar-check"></i> Date de paiement</label>
+                            <input type="date" id="paymentDate">
+                        </div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button type="submit" class="primary"><i class="fas fa-save"></i> Enregistrer la facture</button>
+                        <button type="button" id="resetBillForm" class="secondary"><i class="fas fa-redo"></i> Nouvelle facture</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="invoice-preview" id="billPreview" style="display: none;">
+                <h2><i class="fas fa-eye"></i> Aperçu de la Facture</h2>
+                <div class="invoice-container" id="billContainer">
+                    <div class="invoice-header">
+                        <div class="company-info">
+                            <h3 id="previewOwnerName">Propriétaire</h3>
+                            <p id="previewOwnerContact">Contact du propriétaire</p>
+                        </div>
+                        <div class="invoice-title">
+                            <h1>FACTURE DE LOYER</h1>
+                            <p id="previewInvoiceNumber">N° FACT-20230501-001</p>
+                        </div>
+                        <div class="invoice-details">
+                            <p>Date: <span id="previewBillDate"></span></p>
+                            <p>Échéance: <span id="previewDueDate"></span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="client-info">
+                        <h4>Locataire:</h4>
+                        <p id="previewClientName">Jean Dupont</p>
+                        <p>Adresse: <span id="previewPropertyAddress">123 Rue Principale, Appartement 4B</span></p>
+                    </div>
+                    
+                    <table class="invoice-table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Montant (FCFA)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewBillItems">
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td style="text-align: right;">Total:</td>
+                                <td id="previewBillTotal">0 FCFA</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    
+                    <div class="invoice-footer">
+                        <div class="signature-section">
+                            <p>Statut: <span id="previewPaymentStatus"></span></p>
+                            <p>Date de paiement: <span id="previewPaymentDate"></span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button type="button" id="printBill" class="primary"><i class="fas fa-print"></i> Imprimer</button>
+                    <button type="button" id="saveBill" class="secondary"><i class="fas fa-save"></i> Sauvegarder</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglet Mes factures -->
+        <div id="bills-tab" class="tab-content">
+            <div class="bills-section">
+                <h2><i class="fas fa-file-invoice"></i> Mes Factures</h2>
+                
+                <div class="month-selector">
+                    <label for="filterMonth">Filtrer par mois:</label>
+                    <input type="month" id="filterMonth">
+                    <button type="button" id="clearFilters" class="secondary"><i class="fas fa-times"></i> Effacer</button>
+                </div>
+                
+                <div class="bills-container" id="billsContainer">
+                    <!-- Contenu dynamique -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglet Analyse des dépenses -->
+        <div id="analysis-tab" class="tab-content">
+            <div class="analysis-section">
+                <h2><i class="fas fa-chart-bar"></i> Analyse des Dépenses</h2>
+                
+                <div class="month-selector">
+                    <label for="analysisYear">Année:</label>
+                    <select id="analysisYear">
+                        <!-- Options générées dynamiquement -->
+                    </select>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Dépenses mensuelles</h3>
+                    <canvas id="monthlyExpensesChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Répartition par type de dépense</h3>
+                    <canvas id="expensesByTypeChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Évolution du loyer</h3>
+                    <canvas id="rentEvolutionChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglet Sauvegarde -->
+        <div id="backup-tab" class="tab-content">
+            <div class="backup-section">
+                <h2><i class="fas fa-shield-alt"></i> Sauvegarde des Données</h2>
+                <p>Vos données sont automatiquement sauvegardées dans votre navigateur. Vous pouvez également exporter vos données pour les conserver en sécurité ou les importer sur un autre appareil.</p>
+                
+                <div class="backup-actions">
+                    <button type="button" id="exportData" class="primary"><i class="fas fa-download"></i> Exporter les données</button>
+                    <button type="button" id="importData" class="secondary"><i class="fas fa-upload"></i> Importer des données</button>
+                    <button type="button" id="clearData" class="danger"><i class="fas fa-trash"></i> Effacer toutes les données</button>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h3><i class="fas fa-info-circle"></i> Informations de sauvegarde</h3>
+                    <p>Dernière sauvegarde automatique: <span id="lastBackupTime">-</span></p>
+                    <p>Nombre total de factures: <span id="totalBillsBackup">0</span></p>
+                    <p>Taille des données: <span id="dataSize">0 Ko</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Comptes utilisateurs pré-enregistrés
+            const users = {
+                "KOLA": {
+                    password: "KOLA1@",
+                    name: "M. KOLA",
+                    email: "kola@example.com"
+                },
+                "JEAN": {
+                    password: "JEAN123",
+                    name: "Jean Dupont",
+                    email: "jean.dupont@example.com"
+                },
+                "MARIE": {
+                    password: "MARIE456",
+                    name: "Marie Konate",
+                    email: "marie.konate@example.com"
+                }
+            };
+            
+            // Vérifier si l'utilisateur est déjà connecté
+            if (localStorage.getItem('isAuthenticated') === 'true' && localStorage.getItem('currentUser')) {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                showApp(currentUser);
+            } else {
+                showLogin();
+            }
+            
+            // Gestion de la connexion
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                if (users[username] && users[username].password === password) {
+                    const userData = {
+                        username: username,
+                        name: users[username].name,
+                        email: users[username].email
+                    };
+                    
+                    localStorage.setItem('isAuthenticated', 'true');
+                    localStorage.setItem('currentUser', JSON.stringify(userData));
+                    showApp(userData);
+                } else {
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+            });
+            
+            // Gestion de la déconnexion
+            document.getElementById('logoutButton').addEventListener('click', function() {
+                localStorage.removeItem('isAuthenticated');
+                localStorage.removeItem('currentUser');
+                showLogin();
+            });
+            
+            function showLogin() {
+                document.getElementById('loginContainer').style.display = 'block';
+                document.getElementById('appContainer').style.display = 'none';
+            }
+            
+            function showApp(userData) {
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+                
+                // Mettre à jour les informations utilisateur
+                document.getElementById('userName').textContent = userData.name;
+                document.getElementById('userEmail').textContent = userData.email;
+                document.getElementById('userAvatar').textContent = userData.name.charAt(0);
+                
+                // Initialiser l'application
+                initApp();
+            }
+            
+            // Variables globales
+            let bills = JSON.parse(localStorage.getItem('tenantBills')) || [];
+            let currentBill = null;
+            let autoSaveTimer = null;
+            let lastSaveTime = localStorage.getItem('lastSaveTime') || '-';
+            
+            // Initialiser l'application
+            function initApp() {
+                // Initialiser la date du jour
+                initializeCurrentDate();
+                
+                // Initialiser les données par défaut si nécessaire
+                if (bills.length === 0) {
+                    initializeSampleData();
+                }
+                
+                // Initialiser les écouteurs d'événements
+                initEventListeners();
+                
+                // Afficher le tableau de bord
+                updateDashboard();
+                displayBills();
+                
+                // Mettre à jour les informations de sauvegarde
+                updateBackupInfo();
+                
+                // Configurer la sauvegarde automatique
+                setupAutoSave();
+            }
+            
+            // Initialiser les écouteurs d'événements
+            function initEventListeners() {
+                // Gestion des onglets
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        
+                        this.classList.add('active');
+                        document.getElementById(this.getAttribute('data-tab') + '-tab').classList.add('active');
+                        
+                        // Initialiser l'onglet sélectionné
+                        if (this.getAttribute('data-tab') === 'dashboard') {
+                            updateDashboard();
+                        } else if (this.getAttribute('data-tab') === 'bills') {
+                            displayBills();
+                        } else if (this.getAttribute('data-tab') === 'analysis') {
+                            displayAnalysis();
+                        } else if (this.getAttribute('data-tab') === 'backup') {
+                            updateBackupInfo();
+                        }
+                    });
+                });
+                
+                // Gestion du formulaire de facture
+                document.getElementById('billForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveBill();
+                });
+                
+                // Bouton réinitialiser le formulaire
+                document.getElementById('resetBillForm').addEventListener('click', function() {
+                    document.getElementById('billForm').reset();
+                    initializeCurrentDate();
+                    document.getElementById('billPreview').style.display = 'none';
+                });
+                
+                // Bouton sauvegarder la facture
+                document.getElementById('saveBill').addEventListener('click', function() {
+                    if (currentBill) {
+                        saveBillToStorage(currentBill);
+                        alert('Facture sauvegardée avec succès');
+                        document.getElementById('billForm').reset();
+                        initializeCurrentDate();
+                        document.getElementById('billPreview').style.display = 'none';
+                        updateDashboard();
+                        displayBills();
+                    }
+                });
+                
+                // Bouton imprimer
+                document.getElementById('printBill').addEventListener('click', function() {
+                    window.print();
+                });
+                
+                // Filtre par mois
+                document.getElementById('filterMonth').addEventListener('change', function() {
+                    displayBills();
+                });
+                
+                // Effacer les filtres
+                document.getElementById('clearFilters').addEventListener('click', function() {
+                    document.getElementById('filterMonth').value = '';
+                    displayBills();
+                });
+                
+                // Année d'analyse
+                document.getElementById('analysisYear').addEventListener('change', function() {
+                    displayAnalysis();
+                });
+                
+                // Exportation des données
+                document.getElementById('exportData').addEventListener('click', exportData);
+                
+                // Importation des données
+                document.getElementById('importData').addEventListener('click', importData);
+                
+                // Effacer toutes les données
+                document.getElementById('clearData').addEventListener('click', clearData);
+                
+                // Sauvegarde automatique lors de la modification des champs
+                document.querySelectorAll('#billForm input, #billForm select, #billForm textarea').forEach(element => {
+                    element.addEventListener('input', function() {
+                        triggerAutoSave();
+                    });
+                });
+            }
+            
+            // Configurer la sauvegarde automatique
+            function setupAutoSave() {
+                // Sauvegarde automatique toutes les 30 secondes
+                setInterval(function() {
+                    if (hasUnsavedChanges()) {
+                        saveAllData();
+                    }
+                }, 30000);
+            }
+            
+            // Vérifier s'il y a des changements non sauvegardés
+            function hasUnsavedChanges() {
+                // Pour simplifier, on considère qu'il y a des changements si le formulaire n'est pas vide
+                const billType = document.getElementById('billType').value;
+                const billAmount = document.getElementById('billAmount').value;
+                
+                return billType || billAmount;
+            }
+            
+            // Déclencher la sauvegarde automatique
+            function triggerAutoSave() {
+                // Afficher l'indicateur de sauvegarde
+                const saveStatus = document.getElementById('saveStatus');
+                saveStatus.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Sauvegarde...';
+                
+                // Annuler le minuteur précédent
+                if (autoSaveTimer) {
+                    clearTimeout(autoSaveTimer);
+                }
+                
+                // Définir un nouveau minuteur (sauvegarde après 2 secondes d'inactivité)
+                autoSaveTimer = setTimeout(function() {
+                    if (hasUnsavedChanges()) {
+                        saveAllData();
+                    }
+                }, 2000);
+            }
+            
+            // Sauvegarder toutes les données
+            function saveAllData() {
+                localStorage.setItem('tenantBills', JSON.stringify(bills));
+                localStorage.setItem('lastSaveTime', new Date().toLocaleString());
+                
+                // Mettre à jour l'indicateur de sauvegarde
+                const saveStatus = document.getElementById('saveStatus');
+                saveStatus.innerHTML = '<i class="fas fa-check-circle"></i> Sauvegardé';
+                
+                // Mettre à jour les informations de sauvegarde
+                updateBackupInfo();
+                
+                console.log('Données sauvegardées automatiquement');
+            }
+            
+            // Mettre à jour les informations de sauvegarde
+            function updateBackupInfo() {
+                document.getElementById('lastBackupTime').textContent = lastSaveTime;
+                document.getElementById('totalBillsBackup').textContent = bills.length;
+                
+                // Calculer la taille des données
+                const dataSize = JSON.stringify(bills).length;
+                document.getElementById('dataSize').textContent = (dataSize / 1024).toFixed(2) + ' Ko';
+            }
+            
+            // Exporter les données
+            function exportData() {
+                const dataStr = JSON.stringify(bills, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = 'carnet-factures-' + new Date().toISOString().split('T')[0] + '.json';
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+                
+                alert('Données exportées avec succès');
+            }
+            
+            // Importer des données
+            function importData() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const importedData = JSON.parse(e.target.result);
+                            
+                            if (Array.isArray(importedData)) {
+                                bills = importedData;
+                                saveAllData();
+                                updateDashboard();
+                                displayBills();
+                                alert('Données importées avec succès! ' + bills.length + ' factures chargées.');
+                            } else {
+                                alert('Format de fichier invalide');
+                            }
+                        } catch (error) {
+                            alert('Erreur lors de l\'importation: ' + error.message);
+                        }
+                    };
+                    
+                    reader.readAsText(file);
+                };
+                
+                input.click();
+            }
+            
+            // Effacer toutes les données
+            function clearData() {
+                if (confirm('Êtes-vous sûr de vouloir effacer toutes vos données? Cette action est irréversible.')) {
+                    bills = [];
+                    localStorage.removeItem('tenantBills');
+                    localStorage.removeItem('lastSaveTime');
+                    updateDashboard();
+                    displayBills();
+                    updateBackupInfo();
+                    alert('Toutes les données ont été effacées');
+                }
+            }
+            
+            // Initialiser la date du jour
+            function initializeCurrentDate() {
+                const today = new Date();
+                const formattedDate = today.toISOString().split('T')[0];
+                document.getElementById('billDate').value = formattedDate;
+                
+                // Définir la date d'échéance à 10 jours
+                const dueDate = new Date(today);
+                dueDate.setDate(today.getDate() + 10);
+                document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
+                
+                // Date de paiement par défaut (aujourd'hui)
+                document.getElementById('paymentDate').value = formattedDate;
+                
+                // Générer un numéro de facture automatique
+                document.getElementById('invoiceNumber').value = generateInvoiceNumber();
+            }
+            
+            // Générer un numéro de facture automatique
+            function generateInvoiceNumber() {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                
+                const todayBills = bills.filter(bill => {
+                    const billDate = new Date(bill.date);
+                    return billDate.toDateString() === today.toDateString();
+                });
+                
+                const sequence = String(todayBills.length + 1).padStart(3, '0');
+                return `FACT-${year}${month}${day}-${sequence}`;
+            }
+            
+            // Initialiser des données d'exemple
+            function initializeSampleData() {
+                const today = new Date();
+                const lastMonth = new Date(today);
+                lastMonth.setMonth(today.getMonth() - 1);
+                
+                const sampleBills = [
+                    {
+                        id: generateId(),
+                        type: 'loyer',
+                        date: today.toISOString().split('T')[0],
+                        amount: 75000,
+                        description: 'Loyer mensuel',
+                        dueDate: today.toISOString().split('T')[0],
+                        ownerName: 'M. KOLA',
+                        ownerContact: '+228 90 12 34 56',
+                        invoiceNumber: 'FACT-' + today.getFullYear() + String(today.getMonth()+1).padStart(2, '0') + String(today.getDate()).padStart(2, '0') + '-001',
+                        paymentStatus: 'paye',
+                        paymentDate: today.toISOString().split('T')[0]
+                    },
+                    {
+                        id: generateId(),
+                        type: 'electricite',
+                        date: today.toISOString().split('T')[0],
+                        amount: 15000,
+                        description: 'Facture d\'électricité',
+                        dueDate: today.toISOString().split('T')[0],
+                        ownerName: 'M. KOLA',
+                        ownerContact: '+228 90 12 34 56',
+                        invoiceNumber: 'FACT-' + today.getFullYear() + String(today.getMonth()+1).padStart(2, '0') + String(today.getDate()).padStart(2, '0') + '-002',
+                        paymentStatus: 'paye',
+                        paymentDate: today.toISOString().split('T')[0]
+                    },
+                    {
+                        id: generateId(),
+                        type: 'eau',
+                        date: lastMonth.toISOString().split('T')[0],
+                        amount: 8000,
+                        description: 'Facture d\'eau',
+                        dueDate: lastMonth.toISOString().split('T')[0],
+                        ownerName: 'M. KOLA',
+                        ownerContact: '+228 90 12 34 56',
+                        invoiceNumber: 'FACT-' + lastMonth.getFullYear() + String(lastMonth.getMonth()+1).padStart(2, '0') + String(lastMonth.getDate()).padStart(2, '0') + '-001',
+                        paymentStatus: 'paye',
+                        paymentDate: lastMonth.toISOString().split('T')[0]
+                    },
+                    {
+                        id: generateId(),
+                        type: 'internet',
+                        date: today.toISOString().split('T')[0],
+                        amount: 12000,
+                        description: 'Abonnement internet',
+                        dueDate: today.toISOString().split('T')[0],
+                        ownerName: 'M. KOLA',
+                        ownerContact: '+228 90 12 34 56',
+                        invoiceNumber: 'FACT-' + today.getFullYear() + String(today.getMonth()+1).padStart(2, '0') + String(today.getDate()).padStart(2, '0') + '-003',
+                        paymentStatus: 'en_attente',
+                        paymentDate: ''
+                    }
+                ];
+                
+                bills = sampleBills;
+                saveAllData();
+            }
+            
+            // Générer un ID unique
+            function generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            }
+            
+            // Formater la monnaie
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('fr-FR', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(amount) + ' FCFA';
+            }
+            
+            // Formater la date
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('fr-FR');
+            }
+            
+            // Obtenir le nom du type de facture
+            function getBillTypeName(type) {
+                const types = {
+                    'loyer': 'Loyer',
+                    'eau': 'Eau',
+                    'electricite': 'Électricité',
+                    'internet': 'Internet',
+                    'gaz': 'Gaz',
+                    'entretien': 'Entretien',
+                    'autre': 'Autre'
+                };
+                return types[type] || 'Autre';
+            }
+            
+            // Obtenir la couleur du type de facture
+            function getBillTypeColor(type) {
+                const colors = {
+                    'loyer': '#3498db',
+                    'eau': '#2980b9',
+                    'electricite': '#f39c12',
+                    'internet': '#9b59b6',
+                    'gaz': '#e74c3c',
+                    'entretien': '#27ae60',
+                    'autre': '#95a5a6'
+                };
+                return colors[type] || '#95a5a6';
+            }
+            
+            // Obtenir le statut de paiement
+            function getPaymentStatusName(status) {
+                const statuses = {
+                    'paye': 'Payé',
+                    'en_retard': 'En retard',
+                    'en_attente': 'En attente'
+                };
+                return statuses[status] || 'Inconnu';
+            }
+            
+            // Sauvegarder une facture
+            function saveBill() {
+                const billType = document.getElementById('billType').value;
+                const billDate = document.getElementById('billDate').value;
+                const billAmount = parseFloat(document.getElementById('billAmount').value);
+                const dueDate = document.getElementById('dueDate').value;
+                const billDescription = document.getElementById('billDescription').value;
+                const ownerName = document.getElementById('ownerName').value;
+                const ownerContact = document.getElementById('ownerContact').value;
+                const invoiceNumber = document.getElementById('invoiceNumber').value;
+                const paymentStatus = document.getElementById('paymentStatus').value;
+                const paymentDate = document.getElementById('paymentDate').value;
+                
+                // Validation
+                if (!billType || !billDate || !billAmount || !dueDate || !paymentStatus || !ownerName || !ownerContact || !invoiceNumber) {
+                    alert('Veuillez remplir tous les champs obligatoires.');
+                    return;
+                }
+                
+                // Créer l'objet facture
+                const bill = {
+                    id: generateId(),
+                    type: billType,
+                    date: billDate,
+                    amount: billAmount,
+                    description: billDescription || getBillTypeName(billType),
+                    dueDate: dueDate,
+                    ownerName: ownerName,
+                    ownerContact: ownerContact,
+                    invoiceNumber: invoiceNumber,
+                    paymentStatus: paymentStatus,
+                    paymentDate: paymentDate || ''
+                };
+                
+                // Afficher l'aperçu
+                showBillPreview(bill);
+                currentBill = bill;
+            }
+            
+            // Afficher l'aperçu de la facture
+            function showBillPreview(bill) {
+                document.getElementById('previewBillDate').textContent = formatDate(bill.date);
+                document.getElementById('previewDueDate').textContent = formatDate(bill.dueDate);
+                document.getElementById('previewOwnerName').textContent = bill.ownerName;
+                document.getElementById('previewOwnerContact').textContent = bill.ownerContact;
+                document.getElementById('previewInvoiceNumber').textContent = 'N° ' + bill.invoiceNumber;
+                document.getElementById('previewPaymentStatus').textContent = getPaymentStatusName(bill.paymentStatus);
+                document.getElementById('previewPaymentDate').textContent = bill.paymentDate ? formatDate(bill.paymentDate) : 'Non payé';
+                
+                const previewItems = document.getElementById('previewBillItems');
+                previewItems.innerHTML = '';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${bill.description}</td>
+                    <td>${formatCurrency(bill.amount)}</td>
+                `;
+                previewItems.appendChild(row);
+                
+                document.getElementById('previewBillTotal').textContent = formatCurrency(bill.amount);
+                
+                document.getElementById('billPreview').style.display = 'block';
+                document.getElementById('billPreview').scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Sauvegarder la facture dans le stockage
+            function saveBillToStorage(bill) {
+                bills.push(bill);
+                saveAllData();
+            }
+            
+            // Mettre à jour le tableau de bord
+            function updateDashboard() {
+                const currentMonth = new Date().toISOString().substring(0, 7);
+                const currentMonthBills = bills.filter(bill => bill.date.startsWith(currentMonth));
+                const paidBills = bills.filter(bill => bill.paymentStatus === 'paye');
+                const overdueBills = bills.filter(bill => bill.paymentStatus === 'en_retard');
+                
+                // Calculer les dépenses du mois
+                const monthlyExpenses = currentMonthBills.reduce((sum, bill) => sum + bill.amount, 0);
+                document.getElementById('monthlyExpenses').textContent = formatCurrency(monthlyExpenses);
+                
+                // Calculer la moyenne des dépenses
+                const monthlyAverages = calculateMonthlyAverages();
+                const averageExpenses = monthlyAverages.reduce((sum, avg) => sum + avg, 0) / monthlyAverages.length;
+                document.getElementById('averageExpenses').textContent = formatCurrency(averageExpenses || 0);
+                
+                // Factures payées
+                document.getElementById('paidBills').textContent = paidBills.length;
+                document.getElementById('totalBills').textContent = bills.length;
+                
+                // Dépense principale
+                const mainExpense = getMainExpense();
+                document.getElementById('mainExpense').textContent = getBillTypeName(mainExpense.type);
+                document.getElementById('mainExpenseAmount').textContent = formatCurrency(mainExpense.amount);
+                
+                // Factures en retard
+                document.getElementById('overdueBills').textContent = overdueBills.length;
+                const overdueAmount = overdueBills.reduce((sum, bill) => sum + bill.amount, 0);
+                document.getElementById('overdueAmount').textContent = formatCurrency(overdueAmount);
+                
+                // Mettre à jour les graphiques du tableau de bord
+                updateDashboardCharts();
+            }
+            
+            // Calculer les moyennes mensuelles
+            function calculateMonthlyAverages() {
+                const monthlyTotals = {};
+                
+                bills.forEach(bill => {
+                    const month = bill.date.substring(0, 7);
+                    if (!monthlyTotals[month]) {
+                        monthlyTotals[month] = 0;
+                    }
+                    monthlyTotals[month] += bill.amount;
+                });
+                
+                return Object.values(monthlyTotals);
+            }
+            
+            // Obtenir la dépense principale
+            function getMainExpense() {
+                const expenseByType = {};
+                
+                bills.forEach(bill => {
+                    if (!expenseByType[bill.type]) {
+                        expenseByType[bill.type] = 0;
+                    }
+                    expenseByType[bill.type] += bill.amount;
+                });
+                
+                let mainType = 'loyer';
+                let maxAmount = 0;
+                
+                Object.keys(expenseByType).forEach(type => {
+                    if (expenseByType[type] > maxAmount) {
+                        maxAmount = expenseByType[type];
+                        mainType = type;
+                    }
+                });
+                
+                return { type: mainType, amount: maxAmount };
+            }
+            
+            // Mettre à jour les graphiques du tableau de bord
+            function updateDashboardCharts() {
+                // Graphique d'évolution des dépenses
+                const expensesCtx = document.getElementById('expensesChart').getContext('2d');
+                if (window.expensesChart) {
+                    window.expensesChart.destroy();
+                }
+                
+                // Préparer les données des 6 derniers mois
+                const months = [];
+                const monthlyExpenses = [];
+                
+                for (let i = 5; i >= 0; i--) {
+                    const date = new Date();
+                    date.setMonth(date.getMonth() - i);
+                    const monthKey = date.toISOString().substring(0, 7);
+                    const monthName = date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+                    
+                    months.push(monthName);
+                    
+                    const monthBills = bills.filter(bill => bill.date.startsWith(monthKey));
+                    const monthTotal = monthBills.reduce((sum, bill) => sum + bill.amount, 0);
+                    monthlyExpenses.push(monthTotal);
+                }
+                
+                window.expensesChart = new Chart(expensesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: months,
+                        datasets: [{
+                            label: 'Dépenses (FCFA)',
+                            data: monthlyExpenses,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return formatCurrency(context.raw);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Graphique de répartition des dépenses
+                const pieCtx = document.getElementById('expensesPieChart').getContext('2d');
+                if (window.expensesPieChart) {
+                    window.expensesPieChart.destroy();
+                }
+                
+                const expenseByType = {};
+                bills.forEach(bill => {
+                    if (!expenseByType[bill.type]) {
+                        expenseByType[bill.type] = 0;
+                    }
+                    expenseByType[bill.type] += bill.amount;
+                });
+                
+                const pieLabels = Object.keys(expenseByType).map(type => getBillTypeName(type));
+                const pieData = Object.values(expenseByType);
+                const pieColors = Object.keys(expenseByType).map(type => getBillTypeColor(type));
+                
+                window.expensesPieChart = new Chart(pieCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: pieLabels,
+                        datasets: [{
+                            data: pieData,
+                            backgroundColor: pieColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'right'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        const total = pieData.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${getBillTypeName(Object.keys(expenseByType)[context.dataIndex])}: ${formatCurrency(value)} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Afficher les factures
+            function displayBills() {
+                const billsContainer = document.getElementById('billsContainer');
+                const filterMonth = document.getElementById('filterMonth').value;
+                
+                // Filtrer les factures par mois si nécessaire
+                let filteredBills = bills;
+                if (filterMonth) {
+                    filteredBills = bills.filter(bill => bill.date.startsWith(filterMonth));
+                }
+                
+                // Trier les factures par date (plus récentes en premier)
+                filteredBills.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Afficher les factures
+                if (filteredBills.length === 0) {
+                    billsContainer.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <i class="fas fa-file-invoice" style="font-size: 48px; color: #ddd; margin-bottom: 15px;"></i>
+                            <h3 style="color: #777;">Aucune facture trouvée</h3>
+                            <p>Ajoutez votre première facture en utilisant le formulaire "Ajouter une facture".</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                billsContainer.innerHTML = '';
+                
+                filteredBills.forEach(bill => {
+                    const billCard = document.createElement('div');
+                    billCard.className = 'bill-card';
+                    
+                    const statusClass = bill.paymentStatus === 'paye' ? 'secondary' : 
+                                      bill.paymentStatus === 'en_retard' ? 'danger' : 'warning';
+                    
+                    billCard.innerHTML = `
+                        <h3>${getBillTypeName(bill.type)} <span style="font-size: 14px; color: ${getBillTypeColor(bill.type)}; background-color: ${getBillTypeColor(bill.type)}20; padding: 3px 8px; border-radius: 12px;">${formatCurrency(bill.amount)}</span></h3>
+                        <p><i class="fas fa-hashtag"></i> N°: ${bill.invoiceNumber}</p>
+                        <p><i class="fas fa-calendar-alt"></i> Date: ${formatDate(bill.date)}</p>
+                        <p><i class="fas fa-clock"></i> Échéance: ${formatDate(bill.dueDate)}</p>
+                        <p><i class="fas fa-user-tie"></i> Propriétaire: ${bill.ownerName}</p>
+                        <p><i class="fas fa-phone"></i> Contact: ${bill.ownerContact}</p>
+                        <p><i class="fas fa-align-left"></i> ${bill.description}</p>
+                        <p><i class="fas fa-check-circle"></i> Statut: <span class="${statusClass}" style="padding: 3px 8px; border-radius: 12px; background-color: ${statusClass === 'secondary' ? 'rgba(46, 204, 113, 0.2)' : statusClass === 'danger' ? 'rgba(231, 76, 60, 0.2)' : 'rgba(243, 156, 18, 0.2)'}">${getPaymentStatusName(bill.paymentStatus)}</span></p>
+                        ${bill.paymentDate ? `<p><i class="fas fa-calendar-check"></i> Payé le: ${formatDate(bill.paymentDate)}</p>` : ''}
+                        <div class="bill-actions">
+                            <button class="primary" onclick="editBill('${bill.id}')"><i class="fas fa-edit"></i> Modifier</button>
+                            <button class="danger" onclick="deleteBill('${bill.id}')"><i class="fas fa-trash"></i> Supprimer</button>
+                        </div>
+                    `;
+                    
+                    billsContainer.appendChild(billCard);
+                });
+            }
+            
+            // Afficher l'analyse des dépenses
+            function displayAnalysis() {
+                // Initialiser les années disponibles
+                const years = [...new Set(bills.map(bill => bill.date.substring(0, 4)))];
+                const yearSelect = document.getElementById('analysisYear');
+                
+                yearSelect.innerHTML = '';
+                years.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearSelect.appendChild(option);
+                });
+                
+                if (years.length > 0 && !yearSelect.value) {
+                    yearSelect.value = years[years.length - 1];
+                }
+                
+                const selectedYear = yearSelect.value || new Date().getFullYear().toString();
+                
+                // Graphique des dépenses mensuelles
+                const monthlyCtx = document.getElementById('monthlyExpensesChart').getContext('2d');
+                if (window.monthlyExpensesChart) {
+                    window.monthlyExpensesChart.destroy();
+                }
+                
+                const monthlyData = Array(12).fill(0);
+                bills.forEach(bill => {
+                    const billYear = bill.date.substring(0, 4);
+                    if (billYear === selectedYear) {
+                        const month = parseInt(bill.date.substring(5, 7)) - 1;
+                        monthlyData[month] += bill.amount;
+                    }
+                });
+                
+                const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+                
+                window.monthlyExpensesChart = new Chart(monthlyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: monthNames,
+                        datasets: [{
+                            label: 'Dépenses (FCFA)',
+                            data: monthlyData,
+                            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                            borderColor: '#3498db',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return formatCurrency(context.raw);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Graphique des dépenses par type
+                const typeCtx = document.getElementById('expensesByTypeChart').getContext('2d');
+                if (window.expensesByTypeChart) {
+                    window.expensesByTypeChart.destroy();
+                }
+                
+                const typeData = {};
+                bills.forEach(bill => {
+                    const billYear = bill.date.substring(0, 4);
+                    if (billYear === selectedYear) {
+                        if (!typeData[bill.type]) {
+                            typeData[bill.type] = 0;
+                        }
+                        typeData[bill.type] += bill.amount;
+                    }
+                });
+                
+                const typeLabels = Object.keys(typeData).map(type => getBillTypeName(type));
+                const typeValues = Object.values(typeData);
+                const typeColors = Object.keys(typeData).map(type => getBillTypeColor(type));
+                
+                window.expensesByTypeChart = new Chart(typeCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: typeLabels,
+                        datasets: [{
+                            data: typeValues,
+                            backgroundColor: typeColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'right'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        const total = typeValues.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${typeLabels[context.dataIndex]}: ${formatCurrency(value)} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Graphique de l'évolution du loyer
+                const rentCtx = document.getElementById('rentEvolutionChart').getContext('2d');
+                if (window.rentEvolutionChart) {
+                    window.rentEvolutionChart.destroy();
+                }
+                
+                const rentData = {};
+                bills.forEach(bill => {
+                    if (bill.type === 'loyer') {
+                        const monthKey = bill.date.substring(0, 7);
+                        rentData[monthKey] = bill.amount;
+                    }
+                });
+                
+                const rentMonths = Object.keys(rentData).sort();
+                const rentValues = rentMonths.map(month => rentData[month]);
+                const rentMonthNames = rentMonths.map(month => {
+                    const date = new Date(month + '-01');
+                    return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+                });
+                
+                window.rentEvolutionChart = new Chart(rentCtx, {
+                    type: 'line',
+                    data: {
+                        labels: rentMonthNames,
+                        datasets: [{
+                            label: 'Loyer (FCFA)',
+                            data: rentValues,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return formatCurrency(context.raw);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Éditer une facture
+            window.editBill = function(id) {
+                const bill = bills.find(bill => bill.id === id);
+                if (!bill) return;
+                
+                // Remplir le formulaire
+                document.getElementById('billType').value = bill.type;
+                document.getElementById('billDate').value = bill.date;
+                document.getElementById('billAmount').value = bill.amount;
+                document.getElementById('dueDate').value = bill.dueDate;
+                document.getElementById('billDescription').value = bill.description;
+                document.getElementById('ownerName').value = bill.ownerName;
+                document.getElementById('ownerContact').value = bill.ownerContact;
+                document.getElementById('invoiceNumber').value = bill.invoiceNumber;
+                document.getElementById('paymentStatus').value = bill.paymentStatus;
+                document.getElementById('paymentDate').value = bill.paymentDate;
+                
+                // Aller à l'onglet d'ajout de facture
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                document.querySelector('.tab[data-tab="add-bill"]').classList.add('active');
+                document.getElementById('add-bill-tab').classList.add('active');
+                
+                // Supprimer la facture actuelle
+                deleteBill(id, false);
+            };
+            
+            // Supprimer une facture
+            window.deleteBill = function(id, confirm = true) {
+                if (confirm && !window.confirm('Êtes-vous sûr de vouloir supprimer cette facture ?')) {
+                    return;
+                }
+                
+                bills = bills.filter(bill => bill.id !== id);
+                saveAllData();
+                
+                updateDashboard();
+                displayBills();
+            };
+        });
+    </script>
+</body>
+</html>
