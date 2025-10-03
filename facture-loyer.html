@@ -607,13 +607,24 @@
         }
         
         @media print {
+            body * {
+                visibility: hidden;
+            }
+            .invoice-container, .invoice-container * {
+                visibility: visible;
+            }
+            .invoice-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                border: none;
+                box-shadow: none;
+                margin: 0;
+                padding: 20px;
+            }
             .no-print {
                 display: none !important;
-            }
-            
-            .invoice-container {
-                box-shadow: none;
-                border: none;
             }
         }
     </style>
@@ -831,7 +842,7 @@
                             <tr>
                                 <td colspan="5" style="text-align: center;">
                                     <strong>Arrêtée la présente quittance à la somme de :</strong>
-                                    <div id="previewTotalLetters"></div>
+                                    <div id="previewTotalLetters" style="margin-top: 10px; font-style: italic;"></div>
                                 </td>
                             </tr>
                         </tfoot>
@@ -1072,6 +1083,94 @@
                 let tenantsData = JSON.parse(localStorage.getItem('tenantsData')) || {};
                 let currentInvoice = null;
                 
+                // Fonction pour convertir les nombres en lettres (version complète)
+                function numberToFrenchWords(num) {
+                    if (num === 0) return 'zéro';
+                    
+                    const units = ['', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf'];
+                    const teens = ['dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'];
+                    const tens = ['', 'dix', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante-dix', 'quatre-vingt', 'quatre-vingt-dix'];
+                    const hundreds = ['', 'cent', 'deux cents', 'trois cents', 'quatre cents', 'cinq cents', 'six cents', 'sept cents', 'huit cents', 'neuf cents'];
+                    
+                    function convertBelow1000(n) {
+                        if (n === 0) return '';
+                        
+                        let words = '';
+                        
+                        // Centaines
+                        const hundredsPart = Math.floor(n / 100);
+                        if (hundredsPart > 0) {
+                            if (hundredsPart === 1) {
+                                words += 'cent';
+                            } else {
+                                words += units[hundredsPart] + ' cent';
+                            }
+                        }
+                        
+                        const remainder = n % 100;
+                        if (remainder === 0) return words;
+                        
+                        if (words !== '') words += ' ';
+                        
+                        // Dessous de 100
+                        if (remainder < 10) {
+                            words += units[remainder];
+                        } else if (remainder < 20) {
+                            words += teens[remainder - 10];
+                        } else {
+                            const tensPart = Math.floor(remainder / 10);
+                            const unitsPart = remainder % 10;
+                            
+                            if (tensPart === 7 || tensPart === 9) {
+                                // Cas spéciaux pour 70-79 et 90-99
+                                const base = tensPart === 7 ? 60 : 80;
+                                words += convertBelow1000(base) + '-' + teens[remainder - base];
+                            } else {
+                                words += tens[tensPart];
+                                if (unitsPart > 0) {
+                                    if (unitsPart === 1 && tensPart !== 8) {
+                                        words += ' et ' + units[unitsPart];
+                                    } else {
+                                        words += '-' + units[unitsPart];
+                                    }
+                                }
+                            }
+                        }
+                        
+                        return words;
+                    }
+                    
+                    let result = '';
+                    const integerPart = Math.floor(num);
+                    
+                    if (integerPart >= 1000000) {
+                        const millions = Math.floor(integerPart / 1000000);
+                        result += convertBelow1000(millions) + ' million' + (millions > 1 ? 's' : '');
+                        const remainder = integerPart % 1000000;
+                        if (remainder > 0) {
+                            result += ' ' + convertBelow1000(remainder);
+                        }
+                    } else if (integerPart >= 1000) {
+                        const thousands = Math.floor(integerPart / 1000);
+                        result += convertBelow1000(thousands) + ' mille';
+                        const remainder = integerPart % 1000;
+                        if (remainder > 0) {
+                            result += ' ' + convertBelow1000(remainder);
+                        }
+                    } else {
+                        result = convertBelow1000(integerPart);
+                    }
+                    
+                    // Ajouter "francs CFA"
+                    if (integerPart === 1) {
+                        result += ' franc CFA';
+                    } else if (integerPart > 1) {
+                        result += ' francs CFA';
+                    }
+                    
+                    return result.charAt(0).toUpperCase() + result.slice(1);
+                }
+
                 // Initialiser les données des locataires
                 function initializeTenantsData() {
                     if (Object.keys(tenantsData).length === 0) {
@@ -1206,12 +1305,6 @@
                         code += numbers.charAt(Math.floor(Math.random() * numbers.length));
                     }
                     return code.match(/.{1,4}/g).join('-');
-                }
-                
-                // Fonction pour convertir les nombres en lettres
-                function numberToFrenchWords(num) {
-                    if (num === 0) return 'zéro';
-                    return num.toLocaleString('fr-FR') + ' Francs CFA'; // Version simplifiée
                 }
 
                 // Mettre à jour le total d'un article
@@ -1371,7 +1464,7 @@
                     document.getElementById('invoicePreview').style.display = 'none';
                 }
 
-                // CORRECTION DU BOUTON GÉNÉRER LA FACTURE - FONCTIONNEL
+                // BOUTON GÉNÉRER LA FACTURE - FONCTIONNEL
                 document.getElementById('generateInvoice').addEventListener('click', function() {
                     // Récupérer toutes les données du formulaire
                     const date = document.getElementById('date').value;
@@ -1463,7 +1556,7 @@
                         previewItems.appendChild(row);
                     });
                     
-                    // Mettre à jour le total
+                    // Mettre à jour le total et l'écriture en lettres
                     document.getElementById('previewTotal').textContent = formatCurrency(total);
                     document.getElementById('previewTotalLetters').textContent = numberToFrenchWords(total);
                     
@@ -1519,8 +1612,17 @@
                     
                     // Faire défiler vers l'aperçu
                     document.getElementById('invoicePreview').scrollIntoView({ behavior: 'smooth' });
+                });
+
+                // BOUTON IMPRIMER LA FACTURE - FONCTIONNEL
+                document.getElementById('printInvoice').addEventListener('click', function() {
+                    if (!currentInvoice) {
+                        alert('Veuillez d\'abord générer une facture');
+                        return;
+                    }
                     
-                    console.log('Facture générée avec succès:', currentInvoice);
+                    // Utiliser l'API d'impression du navigateur
+                    window.print();
                 });
 
                 // BOUTON SAUVEGARDER LA FACTURE
@@ -2034,10 +2136,6 @@
                     } else {
                         alert('Aucune facture à exporter');
                     }
-                });
-                
-                document.getElementById('printInvoice').addEventListener('click', function() {
-                    window.print();
                 });
                 
                 document.getElementById('downloadPDF').addEventListener('click', function() {
