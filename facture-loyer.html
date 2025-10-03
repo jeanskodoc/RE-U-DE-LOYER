@@ -8,7 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -80,7 +79,7 @@
             gap: 8px;
         }
         
-        .form-group input {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid var(--border-color);
@@ -89,7 +88,7 @@
             transition: border-color 0.3s;
         }
         
-        .form-group input:focus {
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
             border-color: var(--primary-color);
         }
@@ -232,25 +231,6 @@
             margin-bottom: 0;
         }
         
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            font-size: 16px;
-            resize: vertical;
-            min-height: 80px;
-        }
-        
-        .form-group select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            font-size: 16px;
-            background-color: white;
-        }
-        
         .auto-total-section {
             background-color: var(--light-bg);
             padding: 20px;
@@ -292,6 +272,23 @@
             border-radius: var(--radius);
             margin-bottom: 15px;
             background-color: var(--light-bg);
+            position: relative;
+        }
+        
+        .remove-item {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
         
         button {
@@ -304,6 +301,15 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+        
+        button.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        button.primary:hover {
+            background-color: var(--primary-dark);
         }
         
         button.secondary {
@@ -347,26 +353,6 @@
             gap: 10px;
             margin-top: 20px;
             flex-wrap: wrap;
-        }
-        
-        #addItem {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        #addItem:hover {
-            background-color: var(--primary-dark);
-        }
-        
-        #generateInvoice {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 20px;
-            font-size: 16px;
-        }
-        
-        #generateInvoice:hover {
-            background-color: var(--primary-dark);
         }
         
         .invoice-preview {
@@ -704,7 +690,8 @@
                         </div>
                         <div class="form-group">
                             <label for="invoiceNumber"><i class="fas fa-hashtag"></i> Numéro de facture</label>
-                            <input type="text" id="invoiceNumber" required>
+                            <input type="text" id="invoiceNumber" required readonly>
+                            <small style="color: var(--primary-color); font-weight: 500;">Généré automatiquement</small>
                         </div>
                     </div>
                     
@@ -737,6 +724,7 @@
                         <div class="form-group">
                             <label for="propertyAddress"><i class="fas fa-home"></i> Adresse complète du logement</label>
                             <input type="text" id="propertyAddress" readonly required>
+                            <small style="color: var(--primary-color); font-weight: 500;">Générée automatiquement</small>
                         </div>
                         <div class="form-group">
                             <label for="tenantContact"><i class="fas fa-phone"></i> Contact du locataire</label>
@@ -782,44 +770,15 @@
                     
                     <h3><i class="fas fa-money-bill-wave"></i> Détails du Loyer</h3>
                     <div id="itemsContainer">
-                        <div class="item-row form-row">
-                            <div class="form-group">
-                                <label>Type de charge</label>
-                                <select class="item-type" required>
-                                    <option value="">Sélectionnez...</option>
-                                    <option value="loyer">Loyer mensuel</option>
-                                    <option value="charge">Charges</option>
-                                    <option value="eau">Eau</option>
-                                    <option value="electricite">Électricité</option>
-                                    <option value="entretien">Entretien</option>
-                                    <option value="autre">Autre</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Description</label>
-                                <input type="text" class="item-description" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Quantité</label>
-                                <input type="number" class="item-quantity" min="1" value="1" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Prix unitaire (FCFA)</label>
-                                <input type="number" class="item-price" min="0" step="0.01" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Total (FCFA)</label>
-                                <input type="text" class="item-total" readonly>
-                            </div>
-                        </div>
+                        <!-- Les éléments seront ajoutés dynamiquement ici -->
                     </div>
                     
                     <div class="form-row">
-                        <button type="button" id="addItem"><i class="fas fa-plus"></i> Ajouter une charge</button>
+                        <button type="button" id="addItem" class="primary"><i class="fas fa-plus"></i> Ajouter une charge</button>
                     </div>
                     
                     <div class="actions">
-                        <button type="button" id="generateInvoice"><i class="fas fa-file-invoice"></i> Générer la facture</button>
+                        <button type="button" id="generateInvoice" class="primary"><i class="fas fa-file-invoice"></i> Générer la facture</button>
                         <button type="button" id="resetInvoice" class="reset"><i class="fas fa-redo"></i> Nouvelle facture</button>
                     </div>
                 </form>
@@ -909,10 +868,10 @@
                 </div>
                 
                 <div class="actions no-print">
-                    <button type="button" id="downloadPDF"><i class="fas fa-file-pdf"></i> Télécharger en PDF</button>
-                    <button type="button" id="printInvoice"><i class="fas fa-print"></i> Imprimer la quittance</button>
+                    <button type="button" id="saveInvoice" class="primary"><i class="fas fa-save"></i> Sauvegarder la facture</button>
+                    <button type="button" id="downloadPDF" class="secondary"><i class="fas fa-file-pdf"></i> Télécharger en PDF</button>
+                    <button type="button" id="printInvoice" class="secondary"><i class="fas fa-print"></i> Imprimer la quittance</button>
                     <button type="button" id="sendWhatsApp" class="whatsapp"><i class="fab fa-whatsapp"></i> Envoyer par WhatsApp</button>
-                    <button type="button" id="saveInvoice" class="secondary"><i class="fas fa-save"></i> Sauvegarder la quittance</button>
                     <button type="button" id="exportInvoice" class="export"><i class="fas fa-file-export"></i> Exporter en JSON</button>
                     <button type="button" id="resetFromPreview" class="reset"><i class="fas fa-redo"></i> Nouvelle quittance</button>
                 </div>
@@ -967,7 +926,7 @@
                             </div>
                         </div>
                         <div class="actions">
-                            <button type="submit" id="addTenant"><i class="fas fa-plus"></i> Ajouter le locataire</button>
+                            <button type="submit" id="addTenant" class="primary"><i class="fas fa-plus"></i> Ajouter le locataire</button>
                         </div>
                     </form>
                 </div>
@@ -995,7 +954,7 @@
                     </div>
                 </div>
                 <div class="actions">
-                    <button type="button" id="clearFilters"><i class="fas fa-times"></i> Effacer les filtres</button>
+                    <button type="button" id="clearFilters" class="secondary"><i class="fas fa-times"></i> Effacer les filtres</button>
                 </div>
                 <table class="history-table">
                     <thead>
@@ -1040,17 +999,6 @@
         <div id="verify-tab" class="tab-content">
             <div class="verify-section">
                 <h2><i class="fas fa-qrcode"></i> Vérifier une Quittance</h2>
-                <div class="qr-scanner">
-                    <h3><i class="fas fa-camera"></i> Scanner un QR Code</h3>
-                    <div id="scannerContainer">
-                        <video id="qrVideo" width="100%" height="300" style="border-radius: var(--radius);"></video>
-                        <canvas id="qrCanvas" style="display: none;"></canvas>
-                    </div>
-                    <div class="actions">
-                        <button type="button" id="startScanner"><i class="fas fa-play"></i> Démarrer le scanner</button>
-                        <button type="button" id="stopScanner"><i class="fas fa-stop"></i> Arrêter le scanner</button>
-                    </div>
-                </div>
                 <div class="form-section">
                     <h3><i class="fas fa-search"></i> Recherche manuelle</h3>
                     <div class="form-row">
@@ -1064,7 +1012,7 @@
                         </div>
                     </div>
                     <div class="actions">
-                        <button type="button" id="searchInvoice"><i class="fas fa-search"></i> Rechercher</button>
+                        <button type="button" id="searchInvoice" class="primary"><i class="fas fa-search"></i> Rechercher</button>
                     </div>
                 </div>
                 <div class="verify-result" id="verifyResult">
@@ -1120,12 +1068,9 @@
             
             function initApp() {
                 // Variables globales
-                let itemsCount = 1;
                 let invoices = JSON.parse(localStorage.getItem('invoices')) || [];
                 let tenantsData = JSON.parse(localStorage.getItem('tenantsData')) || {};
                 let currentInvoice = null;
-                let qrScannerActive = false;
-                let qrStream = null;
                 
                 // Initialiser les données des locataires
                 function initializeTenantsData() {
@@ -1187,6 +1132,9 @@
                             document.getElementById('propertyAddress').value = 
                                 `${houseName}, Quartier ${neighborhood}, Kara`;
                         }
+                    } else if (houseName && neighborhood) {
+                        document.getElementById('propertyAddress').value = 
+                            `${houseName}, Quartier ${neighborhood}, Kara`;
                     }
                 }
                 
@@ -1206,7 +1154,7 @@
                     document.getElementById('rentMonth').value = currentMonth;
                 }
                 
-                // Générer automatiquement un numéro de quittance
+                // Générer automatiquement un numéro de facture
                 function generateInvoiceNumber() {
                     const today = new Date();
                     const year = today.getFullYear();
@@ -1219,7 +1167,10 @@
                     });
                     
                     const sequence = String(todayInvoices.length + 1).padStart(3, '0');
-                    return `QUITT-${year}${month}${day}-${sequence}`;
+                    const invoiceNumber = `QUITT-${year}${month}${day}-${sequence}`;
+                    
+                    document.getElementById('invoiceNumber').value = invoiceNumber;
+                    return invoiceNumber;
                 }
                 
                 // Fonction pour formater la monnaie
@@ -1369,6 +1320,7 @@
                             <label>Total (FCFA)</label>
                             <input type="text" class="item-total" readonly value="${formatCurrency(quantity * price)}">
                         </div>
+                        <button type="button" class="remove-item"><i class="fas fa-times"></i></button>
                     `;
                     itemsContainer.appendChild(newItemRow);
                     
@@ -1376,6 +1328,7 @@
                     const typeSelect = newItemRow.querySelector('.item-type');
                     const quantityInput = newItemRow.querySelector('.item-quantity');
                     const priceInput = newItemRow.querySelector('.item-price');
+                    const removeButton = newItemRow.querySelector('.remove-item');
                     
                     typeSelect.addEventListener('change', function() {
                         updateItemDescription(this);
@@ -1389,13 +1342,18 @@
                         updateItemTotal(this);
                     });
                     
+                    removeButton.addEventListener('click', function() {
+                        newItemRow.remove();
+                        updateAutoTotal();
+                    });
+                    
                     updateAutoTotal();
                 }
 
                 // Initialiser une nouvelle quittance
                 function initializeNewInvoice() {
                     initializeCurrentDate();
-                    document.getElementById('invoiceNumber').value = generateInvoiceNumber();
+                    generateInvoiceNumber();
                     document.getElementById('clientName').value = '';
                     document.getElementById('houseName').value = '';
                     document.getElementById('neighborhood').value = '';
@@ -1413,25 +1371,30 @@
                     document.getElementById('invoicePreview').style.display = 'none';
                 }
 
-                // GÉNÉRER LA FACTURE
+                // CORRECTION DU BOUTON GÉNÉRER LA FACTURE - FONCTIONNEL
                 document.getElementById('generateInvoice').addEventListener('click', function() {
+                    // Récupérer toutes les données du formulaire
                     const date = document.getElementById('date').value;
                     const companyName = document.getElementById('companyName').value;
                     const companyAddress = document.getElementById('companyAddress').value;
                     const clientName = document.getElementById('clientName').value;
                     const ownerName = document.getElementById('ownerName').value;
                     const invoiceNumber = document.getElementById('invoiceNumber').value;
+                    const houseName = document.getElementById('houseName').value;
+                    const neighborhood = document.getElementById('neighborhood').value;
                     const propertyAddress = document.getElementById('propertyAddress').value;
                     const tenantContact = document.getElementById('tenantContact').value;
                     const rentMonth = document.getElementById('rentMonth').value;
                     const dueDate = document.getElementById('dueDate').value;
                     
                     // Validation des champs obligatoires
-                    if (!date || !companyName || !companyAddress || !clientName || !ownerName || !invoiceNumber || !propertyAddress || !tenantContact || !rentMonth || !dueDate) {
+                    if (!date || !companyName || !companyAddress || !clientName || !ownerName || !invoiceNumber || 
+                        !houseName || !neighborhood || !propertyAddress || !tenantContact || !rentMonth || !dueDate) {
                         alert('Veuillez remplir tous les champs obligatoires.');
                         return;
                     }
                     
+                    // Récupérer les articles
                     const items = [];
                     let isValid = true;
                     
@@ -1460,14 +1423,17 @@
                         return;
                     }
                     
+                    // Calculer le total
                     const total = items.reduce((sum, item) => sum + item.total, 0);
+                    
+                    // Générer les codes
                     const invoiceCode = generateInvoiceCode();
                     const paymentCode = generatePaymentCode();
                     
                     // Mettre à jour l'aperçu
                     document.getElementById('previewDate').textContent = new Date(date).toLocaleDateString('fr-FR');
                     document.getElementById('previewCompanyName').textContent = companyName;
-                    document.getElementById('previewCompanyAddress').innerHTML = companyAddress.replace(/\n/g, '<br>');
+                    document.getElementById('previewCompanyAddress').textContent = companyAddress;
                     document.getElementById('previewClientName').textContent = clientName;
                     document.getElementById('previewClientNameFooter').textContent = clientName;
                     document.getElementById('previewOwnerName').textContent = ownerName;
@@ -1475,9 +1441,14 @@
                     document.getElementById('previewInvoiceCode').textContent = `Code: ${invoiceCode}`;
                     document.getElementById('previewPropertyAddress').textContent = propertyAddress;
                     document.getElementById('previewTenantContact').textContent = tenantContact;
-                    document.getElementById('previewRentMonth').textContent = new Date(rentMonth + '-01').toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
+                    
+                    // Formater le mois de loyer
+                    const rentMonthDate = new Date(rentMonth + '-01');
+                    document.getElementById('previewRentMonth').textContent = rentMonthDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
+                    
                     document.getElementById('previewDueDate').textContent = new Date(dueDate).toLocaleDateString('fr-FR');
                     
+                    // Mettre à jour les articles dans l'aperçu
                     const previewItems = document.getElementById('previewItems');
                     previewItems.innerHTML = '';
                     items.forEach(item => {
@@ -1492,6 +1463,7 @@
                         previewItems.appendChild(row);
                     });
                     
+                    // Mettre à jour le total
                     document.getElementById('previewTotal').textContent = formatCurrency(total);
                     document.getElementById('previewTotalLetters').textContent = numberToFrenchWords(total);
                     
@@ -1501,17 +1473,27 @@
                     
                     const qrContainer = document.getElementById('qrcode');
                     qrContainer.innerHTML = '';
+                    
+                    // Vérifier que QRCode est disponible
                     if (typeof QRCode !== 'undefined') {
-                        new QRCode(qrContainer, {
-                            text: qrData,
-                            width: 128,
-                            height: 128,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff",
-                            correctLevel: QRCode.CorrectLevel.H
-                        });
+                        try {
+                            new QRCode(qrContainer, {
+                                text: qrData,
+                                width: 128,
+                                height: 128,
+                                colorDark: "#000000",
+                                colorLight: "#ffffff",
+                                correctLevel: QRCode.CorrectLevel.H
+                            });
+                        } catch (error) {
+                            console.error('Erreur lors de la génération du QR Code:', error);
+                            qrContainer.innerHTML = '<p>QR Code non disponible</p>';
+                        }
+                    } else {
+                        qrContainer.innerHTML = '<p>Bibliothèque QR Code non chargée</p>';
                     }
                     
+                    // Stocker la facture courante
                     currentInvoice = {
                         date: date,
                         invoiceNumber: invoiceNumber,
@@ -1519,6 +1501,8 @@
                         companyName: companyName,
                         companyAddress: companyAddress,
                         ownerName: ownerName,
+                        houseName: houseName,
+                        neighborhood: neighborhood,
                         propertyAddress: propertyAddress,
                         tenantContact: tenantContact,
                         rentMonth: rentMonth,
@@ -1530,8 +1514,32 @@
                         timestamp: new Date().getTime()
                     };
                     
+                    // Afficher l'aperçu
                     document.getElementById('invoicePreview').style.display = 'block';
+                    
+                    // Faire défiler vers l'aperçu
                     document.getElementById('invoicePreview').scrollIntoView({ behavior: 'smooth' });
+                    
+                    console.log('Facture générée avec succès:', currentInvoice);
+                });
+
+                // BOUTON SAUVEGARDER LA FACTURE
+                document.getElementById('saveInvoice').addEventListener('click', function() {
+                    if (currentInvoice) {
+                        // Vérifier si la facture existe déjà
+                        const existingIndex = invoices.findIndex(inv => inv.invoiceNumber === currentInvoice.invoiceNumber);
+                        
+                        if (existingIndex !== -1) {
+                            invoices[existingIndex] = currentInvoice;
+                        } else {
+                            invoices.push(currentInvoice);
+                        }
+                        
+                        localStorage.setItem('invoices', JSON.stringify(invoices));
+                        alert('Facture sauvegardée avec succès ! Elle sera utilisée pour les analyses.');
+                    } else {
+                        alert('Aucune facture à sauvegarder. Veuillez d\'abord générer une facture.');
+                    }
                 });
 
                 // BOUTON CALCUL AUTOMATIQUE
@@ -1601,6 +1609,7 @@
                 document.getElementById('clientName').addEventListener('change', updatePropertyAddress);
                 document.getElementById('houseName').addEventListener('change', updatePropertyAddress);
                 document.getElementById('neighborhood').addEventListener('change', updatePropertyAddress);
+                document.getElementById('date').addEventListener('change', generateInvoiceNumber);
 
                 // Gestion des onglets
                 document.querySelectorAll('.tab').forEach(tab => {
@@ -1670,8 +1679,8 @@
                             <p><i class="fas fa-map"></i> ${tenant.neighborhood}</p>
                             <p><i class="fas fa-money-bill-wave"></i> ${formatCurrency(tenant.monthlyRent)}</p>
                             <div class="tenant-actions">
-                                <button class="edit-tenant" data-tenant="${tenantName}"><i class="fas fa-edit"></i> Modifier</button>
-                                <button class="delete-tenant" data-tenant="${tenantName}"><i class="fas fa-trash"></i> Supprimer</button>
+                                <button class="edit-tenant secondary" data-tenant="${tenantName}"><i class="fas fa-edit"></i> Modifier</button>
+                                <button class="delete-tenant reset" data-tenant="${tenantName}"><i class="fas fa-trash"></i> Supprimer</button>
                             </div>
                         `;
                         container.appendChild(card);
@@ -1763,8 +1772,8 @@
                             <td>${new Date(invoice.rentMonth + '-01').toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' })}</td>
                             <td>${formatCurrency(invoice.total)}</td>
                             <td>
-                                <button class="view-invoice" data-id="${invoice.timestamp}"><i class="fas fa-eye"></i></button>
-                                <button class="delete-invoice" data-id="${invoice.timestamp}"><i class="fas fa-trash"></i></button>
+                                <button class="view-invoice secondary" data-id="${invoice.timestamp}"><i class="fas fa-eye"></i></button>
+                                <button class="delete-invoice reset" data-id="${invoice.timestamp}"><i class="fas fa-trash"></i></button>
                             </td>
                         `;
                         tbody.appendChild(row);
@@ -1963,60 +1972,7 @@
                 }
                 
                 // Gestion de la vérification
-                document.getElementById('startScanner').addEventListener('click', startQRScanner);
-                document.getElementById('stopScanner').addEventListener('click', stopQRScanner);
-                document.getElementById('searchInvoice').addEventListener('click', searchInvoice);
-                
-                function startQRScanner() {
-                    const video = document.getElementById('qrVideo');
-                    const canvas = document.getElementById('qrCanvas');
-                    const canvasContext = canvas.getContext('2d');
-                    
-                    // Demander l'accès à la caméra
-                    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                        .then(function(stream) {
-                            qrStream = stream;
-                            video.srcObject = stream;
-                            video.play();
-                            qrScannerActive = true;
-                            requestAnimationFrame(scanQRCode);
-                        })
-                        .catch(function(err) {
-                            console.error("Erreur d'accès à la caméra: ", err);
-                            alert("Impossible d'accéder à la caméra. Vérifiez les permissions.");
-                        });
-                    
-                    function scanQRCode() {
-                        if (!qrScannerActive) return;
-                        
-                        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                            canvas.height = video.videoHeight;
-                            canvas.width = video.videoWidth;
-                            canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
-                            
-                            const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
-                            const code = jsQR(imageData.data, imageData.width, imageData.height);
-                            
-                            if (code) {
-                                stopQRScanner();
-                                verifyInvoiceFromQR(code.data);
-                            }
-                        }
-                        
-                        requestAnimationFrame(scanQRCode);
-                    }
-                }
-                
-                function stopQRScanner() {
-                    qrScannerActive = false;
-                    if (qrStream) {
-                        qrStream.getTracks().forEach(track => track.stop());
-                        qrStream = null;
-                    }
-                    document.getElementById('qrVideo').srcObject = null;
-                }
-                
-                function searchInvoice() {
+                document.getElementById('searchInvoice').addEventListener('click', function() {
                     const invoiceNumber = document.getElementById('searchInvoiceNumber').value;
                     const invoiceCode = document.getElementById('searchInvoiceCode').value;
                     
@@ -2035,36 +1991,7 @@
                     } else {
                         showVerificationResult(null, false);
                     }
-                }
-                
-                function verifyInvoiceFromQR(qrData) {
-                    // Analyser les données du QR code
-                    const parts = qrData.split(', ');
-                    const data = {};
-                    
-                    parts.forEach(part => {
-                        const [key, value] = part.split(': ');
-                        data[key] = value;
-                    });
-                    
-                    const invoiceNumber = data['Quittance'];
-                    const invoiceCode = data['Code'];
-                    
-                    const foundInvoice = invoices.find(inv => 
-                        inv.invoiceNumber === invoiceNumber && inv.invoiceCode === invoiceCode
-                    );
-                    
-                    if (foundInvoice) {
-                        showVerificationResult(foundInvoice, true);
-                    // Vérifier également le montant et le code de paiement
-                        if (data['Montant'] !== formatCurrency(foundInvoice.total) || 
-                            data['Code Paiement'] !== foundInvoice.paymentCode) {
-                            alert('Attention: Certaines informations ne correspondent pas');
-                        }
-                    } else {
-                        showVerificationResult(null, false);
-                    }
-                }
+                });
                 
                 function showVerificationResult(invoice, isValid) {
                     const resultDiv = document.getElementById('verifyResult');
@@ -2093,24 +2020,6 @@
                 }
                 
                 // Gestion des autres fonctionnalités
-                document.getElementById('saveInvoice').addEventListener('click', function() {
-                    if (currentInvoice) {
-                        // Vérifier si la facture existe déjà
-                        const existingIndex = invoices.findIndex(inv => inv.timestamp === currentInvoice.timestamp);
-                        
-                        if (existingIndex !== -1) {
-                            invoices[existingIndex] = currentInvoice;
-                        } else {
-                            invoices.push(currentInvoice);
-                        }
-                        
-                        localStorage.setItem('invoices', JSON.stringify(invoices));
-                        alert('Quittance sauvegardée avec succès');
-                    } else {
-                        alert('Aucune quittance à sauvegarder');
-                    }
-                });
-                
                 document.getElementById('exportInvoice').addEventListener('click', function() {
                     if (currentInvoice) {
                         const dataStr = JSON.stringify(currentInvoice, null, 2);
@@ -2123,7 +2032,7 @@
                         linkElement.setAttribute('download', exportFileDefaultName);
                         linkElement.click();
                     } else {
-                        alert('Aucune quittance à exporter');
+                        alert('Aucune facture à exporter');
                     }
                 });
                 
@@ -2168,7 +2077,7 @@
                         
                         window.open(whatsappUrl, '_blank');
                     } else {
-                        alert('Aucune quittance à envoyer');
+                        alert('Aucune facture à envoyer');
                     }
                 });
                 
@@ -2202,26 +2111,6 @@
                 initializeTenantsData();
                 updateTenantsDropdown();
                 initializeNewInvoice();
-                
-                // Initialiser les écouteurs d'événements pour la première ligne
-                const firstItemRow = document.querySelector('.item-row');
-                if (firstItemRow) {
-                    const typeSelect = firstItemRow.querySelector('.item-type');
-                    const quantityInput = firstItemRow.querySelector('.item-quantity');
-                    const priceInput = firstItemRow.querySelector('.item-price');
-                    
-                    typeSelect.addEventListener('change', function() {
-                        updateItemDescription(this);
-                    });
-                    
-                    quantityInput.addEventListener('input', function() {
-                        updateItemTotal(this);
-                    });
-                    
-                    priceInput.addEventListener('input', function() {
-                        updateItemTotal(this);
-                    });
-                }
             }
         });
     </script>
