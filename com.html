@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Factures de Loyer pour Propriétaires</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f9b0f 0%, #3dd63d 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-section {
+            padding: 40px;
+        }
+
+        .info-section {
+            background: linear-gradient(135deg, #0f9b0f 0%, #3dd63d 100%);
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h1 {
+            color: #0f9b0f;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .tagline {
+            color: #0f9b0f;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #0f9b0f;
+            box-shadow: 0 0 0 3px rgba(15, 155, 15, 0.2);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .benefits-list {
+            list-style: none;
+            margin: 25px 0;
+        }
+
+        .benefits-list li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .benefits-list li::before {
+            content: "✓";
+            background: rgba(255, 255, 255, 0.2);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #0f9b0f;
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #0d8a0d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(15, 155, 15, 0.4);
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-whatsapp:hover {
+            background: #1da851;
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+        }
+
+        .contact-info {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .steps {
+            display: flex;
+            margin: 25px 0;
+            justify-content: space-between;
+        }
+
+        .step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+        }
+
+        .step-text {
+            font-size: 12px;
+        }
+
+        .step:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            top: 15px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .testimonial {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-section {
+                order: -1;
+                padding: 30px;
+            }
+            
+            .form-section {
+                padding: 30px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-section">
+            <h1>Inscription LoyerPro</h1>
+            <p class="tagline">Rejoignez des centaines de propriétaires qui digitalisent leur gestion locative</p>
+            
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label for="propertyType">Type de bien immobilier *</label>
+                    <select id="propertyType" required>
+                        <option value="">Sélectionnez...</option>
+                        <option value="appartement">Appartement</option>
+                        <option value="maison">Maison</option>
+                        <option value="bureau">Bureau</option>
+                        <option value="local-commercial">Local commercial</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">Prénom *</label>
+                        <input type="text" id="firstName" required placeholder="Votre prénom">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Nom *</label>
+                        <input type="text" id="lastName" required placeholder="Votre nom">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" required placeholder="votre@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Téléphone *</label>
+                        <input type="tel" id="phone" required placeholder="Votre numéro">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Adresse du bien *</label>
+                    <input type="text" id="address" required placeholder="Adresse complète du bien">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="propertyCount">Nombre de biens *</label>
+                        <select id="propertyCount" required>
+                            <option value="">Sélectionnez...</option>
+                            <option value="1">1</option>
+                            <option value="2-5">2-5</option>
+                            <option value="6-10">6-10</option>
+                            <option value="10+">Plus de 10</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="rentAmount">Loyer mensuel moyen</label>
+                        <select id="rentAmount">
+                            <option value="">Sélectionnez...</option>
+                            <option value="0-50000">0 - 50.000 FCFA</option>
+                            <option value="50000-100000">50.000 - 100.000 FCFA</option>
+                            <option value="100000-200000">100.000 - 200.000 FCFA</option>
+                            <option value="200000+">Plus de 200.000 FCFA</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tenantCount">Locataires par mois *</label>
+                    <select id="tenantCount" required>
+                        <option value="">Sélectionnez...</option>
+                        <option value="1-5">1-5</option>
+                        <option value="6-15">6-15</option>
+                        <option value="16-30">16-30</option>
+                        <option value="30+">Plus de 30</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Services souhaités *</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="service-quittances" checked>
+                        <label for="service-quittances">Quittances de loyer digitales</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="service-contracts">
+                        <label for="service-contracts">Gestion des contrats</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="service-payments">
+                        <label for="service-payments">Suivi des paiements</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="service-analytics">
+                        <label for="service-analytics">Analyses de revenus</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message additionnel</label>
+                    <textarea id="message" rows="3" placeholder="Questions ou besoins spécifiques..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <button type="button" id="sendWhatsApp" class="btn btn-whatsapp">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.285A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Envoyer par WhatsApp
+                    </button>
+                </div>
+                
+                <p style="text-align: center; font-size: 14px; color: #666; margin-top: 15px;">
+                    En cliquant sur "Envoyer par WhatsApp", vous acceptez nos conditions d'utilisation
+                </p>
+            </form>
+        </div>
+        
+        <div class="info-section">
+            <div class="logo">
+                <span class="logo-icon">🏠</span>
+                <span>LoyerPro</span>
+            </div>
+            
+            <h2>Digitalisez votre gestion locative</h2>
+            <p>Rejoignez notre plateforme de gestion locative utilisée par plus de 300 propriétaires.</p>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Inscription</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Configuration</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Gestion</div>
+                </div>
+            </div>
+            
+            <ul class="benefits-list">
+                <li>Quittances professionnelles en 2 clics</li>
+                <li>Gestion centralisée de vos locataires</li>
+                <li>Suivi détaillé de vos revenus locatifs</li>
+                <li>Contrats de location digitalisés</li>
+                <li>Sauvegarde cloud sécurisée</li>
+                <li>Support dédié 7j/7</li>
+            </ul>
+            
+            <div class="testimonial">
+                "Depuis que j'utilise LoyerPro, j'ai gagné un temps précieux. La gestion de mes locations est devenue simple et rapide !"
+                <br><strong>- Pierre, propriétaire de 5 appartements</strong>
+            </div>
+            
+            <div class="contact-info">
+                <p>📞 Service client : 92871605</p>
+                <p>📧 Email : contact@loyerpro.com</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('registrationForm');
+            const sendButton = document.getElementById('sendWhatsApp');
+            
+            sendButton.addEventListener('click', function() {
+                // Récupération des valeurs du formulaire
+                const propertyType = document.getElementById('propertyType').value;
+                const firstName = document.getElementById('firstName').value;
+                const lastName = document.getElementById('lastName').value;
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const address = document.getElementById('address').value;
+                const propertyCount = document.getElementById('propertyCount').value;
+                const rentAmount = document.getElementById('rentAmount').value;
+                const tenantCount = document.getElementById('tenantCount').value;
+                const message = document.getElementById('message').value;
+                
+                // Récupération des services sélectionnés
+                const services = [];
+                if (document.getElementById('service-quittances').checked) services.push('Quittances de loyer digitales');
+                if (document.getElementById('service-contracts').checked) services.push('Gestion des contrats');
+                if (document.getElementById('service-payments').checked) services.push('Suivi des paiements');
+                if (document.getElementById('service-analytics').checked) services.push('Analyses de revenus');
+                
+                // Validation des champs obligatoires
+                if (!propertyType || !firstName || !lastName || !email || !phone || !address || !propertyCount || !tenantCount) {
+                    alert('Veuillez remplir tous les champs obligatoires (*)');
+                    return;
+                }
+                
+                // Formatage du message pour WhatsApp
+                const whatsappMessage = `Nouvelle inscription LoyerPro%0A%0A` +
+                    `🏠 *Type de bien:* ${propertyType}%0A` +
+                    `👤 *Propriétaire:* ${firstName} ${lastName}%0A` +
+                    `📧 *Email:* ${email}%0A` +
+                    `📞 *Téléphone:* ${phone}%0A` +
+                    `📍 *Adresse du bien:* ${address}%0A` +
+                    `🏘️ *Nombre de biens:* ${propertyCount}%0A` +
+                    `💰 *Loyer mensuel moyen:* ${rentAmount}%0A` +
+                    `👥 *Locataires/mois:* ${tenantCount}%0A` +
+                    `🛠️ *Services souhaités:* ${services.join(', ')}%0A` +
+                    (message ? `💬 *Message:* ${message}%0A` : '') +
+                    `%0A_Message envoyé via le formulaire d'inscription_`;
+                
+                // Numéro WhatsApp
+                const phoneNumber = "92871605";
+                
+                // Ouverture de WhatsApp
+                window.open(`https://wa.me/${phoneNumber}?text=${whatsappMessage}`, '_blank');
+                
+                // Réinitialisation du formulaire après envoi
+                form.reset();
+                
+                // Message de confirmation
+                alert('Votre inscription a été envoyée avec succès! Nous vous contacterons rapidement.');
+            });
+        });
+    </script>
+</body>
+</html>
