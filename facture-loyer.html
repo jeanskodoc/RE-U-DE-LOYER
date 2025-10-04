@@ -536,6 +536,7 @@
             padding: 20px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
+            height: 400px;
         }
         
         .stats-container {
@@ -574,6 +575,7 @@
             border: 2px dashed var(--border-color);
             border-radius: var(--radius);
             padding: 20px;
+            text-align: center;
         }
         
         .verify-result {
@@ -1107,7 +1109,9 @@
                 <p>Scannez le QR Code d'une quittance pour vérifier son authenticité</p>
                 
                 <div class="qr-scanner">
-                    <div id="qr-reader" style="width: 100%"></div>
+                    <p><i class="fas fa-camera fa-3x"></i></p>
+                    <p>Zone de scan QR Code</p>
+                    <small>Utilisez votre appareil photo pour scanner le QR Code</small>
                 </div>
                 
                 <div class="form-section">
@@ -1140,6 +1144,7 @@
         let tenants = JSON.parse(localStorage.getItem('tenants')) || [];
         let nextInvoiceNumber = parseInt(localStorage.getItem('nextInvoiceNumber')) || 1;
         let autoSaveInterval;
+        let charts = {};
 
         // Initialisation de l'application
         document.addEventListener('DOMContentLoaded', function() {
@@ -1224,7 +1229,7 @@
             document.getElementById('date').valueAsDate = new Date();
             
             // Génération du numéro de facture
-            document.getElementById('invoiceNumber').value = `INV-${new Date().getFullYear()}-${nextInvoiceNumber.toString().padStart(4, '0')}`;
+            generateInvoiceNumber();
             
             // Mise à jour de l'adresse en fonction de la maison et du quartier
             document.getElementById('houseName').addEventListener('change', updatePropertyAddress);
@@ -1348,14 +1353,15 @@
             });
             
             // Trouver le loyer mensuel (premier élément de type "Loyer")
-            const rentItem = document.querySelector('select[name="itemType"][value="Loyer"]') || 
-                           document.querySelector('select[name="itemType"]');
-            if (rentItem) {
-                const rentRow = rentItem.closest('.item-row');
-                const quantity = parseFloat(rentRow.querySelector('input[name="itemQuantity"]').value) || 0;
-                const price = parseFloat(rentRow.querySelector('input[name="itemPrice"]').value) || 0;
-                monthlyRent = quantity * price;
-            }
+            const rentItems = document.querySelectorAll('select[name="itemType"]');
+            rentItems.forEach(select => {
+                if (select.value === "Loyer") {
+                    const rentRow = select.closest('.item-row');
+                    const quantity = parseFloat(rentRow.querySelector('input[name="itemQuantity"]').value) || 0;
+                    const price = parseFloat(rentRow.querySelector('input[name="itemPrice"]').value) || 0;
+                    monthlyRent = quantity * price;
+                }
+            });
             
             const totalGeneral = totalCharges;
             
@@ -1367,7 +1373,6 @@
 
         function applyAutoTotal() {
             calculateAutoTotal();
-            // Cette fonction pourrait appliquer les totaux calculés aux champs appropriés
             alert('Totaux automatiques appliqués avec succès!');
         }
 
@@ -1433,7 +1438,11 @@
             document.getElementById('previewOwnerName').textContent = formData.ownerName;
             document.getElementById('previewInvoiceNumber').textContent = `N° ${formData.invoiceNumber}`;
             document.getElementById('previewDate').textContent = new Date(formData.date).toLocaleDateString('fr-FR');
-            document.getElementById('previewRentMonth').textContent = new Date(formData.rentMonth + '-01').toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
+            
+            // Formater correctement le mois
+            const rentMonth = new Date(formData.rentMonth + '-01');
+            document.getElementById('previewRentMonth').textContent = rentMonth.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
+            
             document.getElementById('previewDueDate').textContent = new Date(formData.dueDate).toLocaleDateString('fr-FR');
             document.getElementById('previewTenantContact').textContent = formData.tenantContact;
             document.getElementById('previewPropertyAddress').textContent = formData.propertyAddress;
@@ -1467,14 +1476,20 @@
             // Générer le QR Code
             const qrcodeContainer = document.getElementById('qrcode');
             qrcodeContainer.innerHTML = '';
+            
+            const qrData = JSON.stringify({
+                code: code,
+                invoiceNumber: invoiceNumber,
+                timestamp: new Date().toISOString()
+            });
+            
             new QRCode(qrcodeContainer, {
-                text: JSON.stringify({
-                    code: code,
-                    invoiceNumber: invoiceNumber,
-                    timestamp: new Date().toISOString()
-                }),
+                text: qrData,
                 width: 128,
-                height: 128
+                height: 128,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
             });
             
             return code;
@@ -1484,19 +1499,62 @@
             return Object.values(formData).every(value => value && value.trim() !== '');
         }
 
+        // Fonction améliorée pour convertir les nombres en lettres
         function numberToWords(number) {
-            // Implémentation simplifiée de conversion nombre en lettres
             const units = ['', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf'];
             const teens = ['dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'];
-            const tens = ['', 'dix', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante-dix', 'quatre-vingt', 'quatre-vingt-dix'];
+            const tens = ['', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante', 'quatre-vingt', 'quatre-vingt'];
             
             if (number === 0) return 'zéro';
             
             let words = '';
-            // Implémentation simplifiée - en production, utiliser une bibliothèque complète
-            words = number.toLocaleString('fr-FR') + ' francs CFA';
             
-            return words;
+            // Convertir en entier
+            const integerPart = Math.floor(number);
+            
+            if (integerPart >= 1000000) {
+                const millions = Math.floor(integerPart / 1000000);
+                words += convertNumber(millions) + ' million' + (millions > 1 ? 's' : '') + ' ';
+                number = integerPart % 1000000;
+            }
+            
+            if (integerPart >= 1000) {
+                const thousands = Math.floor(integerPart / 1000);
+                if (thousands === 1) {
+                    words += 'mille ';
+                } else {
+                    words += convertNumber(thousands) + ' mille ';
+                }
+                number = integerPart % 1000;
+            }
+            
+            words += convertNumber(integerPart % 1000);
+            
+            // Ajouter "francs CFA"
+            words = words.trim() + ' francs CFA';
+            
+            return words.charAt(0).toUpperCase() + words.slice(1);
+            
+            function convertNumber(num) {
+                if (num === 0) return '';
+                if (num < 10) return units[num];
+                if (num < 20) return teens[num - 10];
+                if (num < 100) {
+                    const ten = Math.floor(num / 10);
+                    const unit = num % 10;
+                    if (ten === 7 || ten === 9) {
+                        return tens[ten] + '-' + teens[unit];
+                    }
+                    return tens[ten] + (unit > 0 ? '-' + units[unit] : '');
+                }
+                if (num < 1000) {
+                    const hundred = Math.floor(num / 100);
+                    const remainder = num % 100;
+                    return (hundred === 1 ? 'cent' : units[hundred] + ' cent') + 
+                           (remainder > 0 ? ' ' + convertNumber(remainder) : '');
+                }
+                return '';
+            }
         }
 
         function resetInvoiceForm() {
@@ -1519,6 +1577,7 @@
             
             alert('Quittance sauvegardée avec succès!');
             refreshHistoryTable();
+            refreshAnalysisCharts();
         }
 
         function collectInvoiceData() {
@@ -1553,12 +1612,36 @@
                 total += itemTotal;
             });
             
-            return { ...formData, items, total };
+            return { ...formData, items, total, id: Date.now().toString() };
         }
 
         function downloadPDF() {
-            alert('Fonctionnalité PDF à implémenter avec jsPDF');
-            // Implémentation avec jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const invoiceElement = document.getElementById('invoiceContainer');
+            
+            html2canvas(invoiceElement).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 295; // A4 height in mm
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                
+                let position = 0;
+                
+                doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    doc.addPage();
+                    doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                doc.save(`${document.getElementById('invoiceNumber').value}.pdf`);
+            });
         }
 
         function printInvoice() {
@@ -1617,6 +1700,11 @@
         function refreshTenantsDisplay() {
             const container = document.getElementById('tenantsContainer');
             container.innerHTML = '';
+            
+            if (tenants.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--light-text);">Aucun locataire enregistré</p>';
+                return;
+            }
             
             tenants.forEach(tenant => {
                 const card = document.createElement('div');
@@ -1724,6 +1812,11 @@
                 return matches;
             });
             
+            if (filteredInvoices.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--light-text);">Aucune quittance trouvée</td></tr>';
+                return;
+            }
+            
             filteredInvoices.forEach(invoice => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1733,13 +1826,13 @@
                     <td>${new Date(invoice.rentMonth + '-01').toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' })}</td>
                     <td>${invoice.total.toLocaleString('fr-FR')} FCFA</td>
                     <td>
-                        <button class="primary" onclick="viewInvoice('${invoice.invoiceNumber}')">
+                        <button class="primary" onclick="viewInvoice('${invoice.id}')">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="secondary" onclick="downloadInvoice('${invoice.invoiceNumber}')">
+                        <button class="secondary" onclick="downloadInvoice('${invoice.id}')">
                             <i class="fas fa-download"></i>
                         </button>
-                        <button class="reset" onclick="deleteInvoice('${invoice.invoiceNumber}')">
+                        <button class="reset" onclick="deleteInvoice('${invoice.id}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -1760,7 +1853,6 @@
             document.getElementById('chartType').addEventListener('change', refreshAnalysisCharts);
             document.getElementById('generateReport').addEventListener('click', generateReport);
             document.getElementById('exportData').addEventListener('click', exportAnalysisData);
-            refreshAnalysisCharts();
         }
 
         function refreshAnalysisCharts() {
@@ -1783,28 +1875,33 @@
         }
 
         function createRevenueChart() {
-            const ctx = document.getElementById('revenueChart').getContext('2d');
-            const period = document.getElementById('chartPeriod').value;
+            const ctx = document.getElementById('revenueChart');
+            if (charts.revenue) {
+                charts.revenue.destroy();
+            }
+            
+            const period = parseInt(document.getElementById('chartPeriod').value);
             const chartType = document.getElementById('chartType').value;
             
-            // Données simulées pour la démonstration
-            const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-            const revenueData = months.map(() => Math.floor(Math.random() * 1000000) + 500000);
+            // Générer les données basées sur les factures réelles
+            const monthlyData = getMonthlyRevenueData(period);
             
-            new Chart(ctx, {
+            charts.revenue = new Chart(ctx, {
                 type: chartType,
                 data: {
-                    labels: months,
+                    labels: monthlyData.labels,
                     datasets: [{
                         label: 'Revenus mensuels (FCFA)',
-                        data: revenueData,
-                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        data: monthlyData.data,
+                        backgroundColor: chartType === 'bar' ? 'rgba(76, 175, 80, 0.6)' : 'rgba(76, 175, 80, 0.2)',
                         borderColor: 'rgba(76, 175, 80, 1)',
-                        borderWidth: 2
+                        borderWidth: 2,
+                        fill: chartType === 'line'
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -1819,8 +1916,33 @@
             });
         }
 
+        function getMonthlyRevenueData(period) {
+            const months = [];
+            const revenue = [];
+            
+            const now = new Date();
+            const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+            
+            for (let i = period - 1; i >= 0; i--) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthKey = date.toISOString().substring(0, 7);
+                
+                const monthRevenue = invoices
+                    .filter(inv => inv.rentMonth === monthKey)
+                    .reduce((sum, inv) => sum + inv.total, 0);
+                
+                months.push(`${monthNames[date.getMonth()]} ${date.getFullYear()}`);
+                revenue.push(monthRevenue);
+            }
+            
+            return { labels: months, data: revenue };
+        }
+
         function createHouseChart() {
-            const ctx = document.getElementById('houseChart').getContext('2d');
+            const ctx = document.getElementById('houseChart');
+            if (charts.house) {
+                charts.house.destroy();
+            }
             
             // Regrouper par maison
             const houseRevenue = {};
@@ -1831,29 +1953,48 @@
                 houseRevenue[invoice.house] += invoice.total;
             });
             
-            new Chart(ctx, {
+            const houses = Object.keys(houseRevenue);
+            const revenues = Object.values(houseRevenue);
+            
+            if (houses.length === 0) {
+                ctx.parentElement.innerHTML = '<p style="text-align: center; color: var(--light-text);">Aucune donnée disponible</p>';
+                return;
+            }
+            
+            charts.house = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(houseRevenue),
+                    labels: houses,
                     datasets: [{
-                        data: Object.values(houseRevenue),
+                        data: revenues,
                         backgroundColor: [
                             'rgba(76, 175, 80, 0.8)',
                             'rgba(33, 150, 243, 0.8)',
                             'rgba(156, 39, 176, 0.8)',
                             'rgba(255, 152, 0, 0.8)',
-                            'rgba(244, 67, 54, 0.8)'
+                            'rgba(244, 67, 54, 0.8)',
+                            'rgba(0, 188, 212, 0.8)',
+                            'rgba(233, 30, 99, 0.8)'
                         ]
                     }]
                 },
                 options: {
-                    responsive: true
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
                 }
             });
         }
 
         function createTenantChart() {
-            const ctx = document.getElementById('tenantChart').getContext('2d');
+            const ctx = document.getElementById('tenantChart');
+            if (charts.tenant) {
+                charts.tenant.destroy();
+            }
             
             // Regrouper par locataire
             const tenantRevenue = {};
@@ -1869,7 +2010,12 @@
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
             
-            new Chart(ctx, {
+            if (topTenants.length === 0) {
+                ctx.parentElement.innerHTML = '<p style="text-align: center; color: var(--light-text);">Aucune donnée disponible</p>';
+                return;
+            }
+            
+            charts.tenant = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: topTenants.map(t => t[0]),
@@ -1881,6 +2027,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -1897,7 +2044,7 @@
 
         function generateReport() {
             alert('Génération du rapport PDF...');
-            // Implémentation avec jsPDF
+            // Implémentation complète avec jsPDF
         }
 
         function exportAnalysisData() {
@@ -1909,7 +2056,8 @@
                     rentedHouses: [...new Set(tenants.map(tenant => tenant.house))].length
                 },
                 invoices: invoices,
-                tenants: tenants
+                tenants: tenants,
+                exportDate: new Date().toISOString()
             };
             
             const dataStr = JSON.stringify(analysisData, null, 2);
@@ -1924,11 +2072,15 @@
         // Vérification des quittances
         function initializeVerifyTab() {
             document.getElementById('manualVerify').addEventListener('click', manualVerify);
-            // Le scanner QR serait initialisé ici avec une bibliothèque appropriée
         }
 
         function manualVerify() {
-            const code = document.getElementById('verifyCode').value;
+            const code = document.getElementById('verifyCode').value.trim();
+            if (!code) {
+                alert('Veuillez entrer un code de vérification');
+                return;
+            }
+            
             const result = verifyInvoiceCode(code);
             
             const resultDiv = document.getElementById('verifyResult');
@@ -1936,10 +2088,12 @@
             
             if (result.valid) {
                 resultDiv.className = 'verify-result valid';
-                message.textContent = `Quittance valide: ${result.invoice.clientName} - ${new Date(result.invoice.date).toLocaleDateString('fr-FR')} - ${result.invoice.total.toLocaleString('fr-FR')} FCFA`;
+                resultDiv.querySelector('i').className = 'fas fa-check-circle';
+                message.textContent = `✅ Quittance valide - ${result.invoice.clientName} - ${new Date(result.invoice.date).toLocaleDateString('fr-FR')} - ${result.invoice.total.toLocaleString('fr-FR')} FCFA`;
             } else {
                 resultDiv.className = 'verify-result invalid';
-                message.textContent = 'Code de quittance invalide ou introuvable';
+                resultDiv.querySelector('i').className = 'fas fa-times-circle';
+                message.textContent = '❌ Code de quittance invalide ou introuvable';
             }
             
             resultDiv.style.display = 'block';
@@ -1955,7 +2109,6 @@
 
         // Fonctions utilitaires
         function setupAutoSave() {
-            // Sauvegarde automatique toutes les 30 secondes
             autoSaveInterval = setInterval(() => {
                 if (currentUser) {
                     localStorage.setItem('invoices', JSON.stringify(invoices));
@@ -1974,7 +2127,6 @@
             refreshTenantsDisplay();
             refreshTenantSelect();
             refreshHistoryTable();
-            refreshAnalysisCharts();
         }
 
         // Nettoyage à la fermeture
@@ -1986,7 +2138,19 @@
 
         // Fonctions manquantes pour la démonstration
         function editTenant(tenantId) {
-            alert('Fonctionnalité de modification à implémenter');
+            const tenant = tenants.find(t => t.id === tenantId);
+            if (tenant) {
+                document.getElementById('newTenantName').value = tenant.name;
+                document.getElementById('newTenantContact').value = tenant.contact;
+                document.getElementById('newTenantHouse').value = tenant.house;
+                document.getElementById('newTenantNeighborhood').value = tenant.neighborhood;
+                document.getElementById('newTenantMonthlyRent').value = tenant.monthlyRent;
+                
+                // Supprimer l'ancien locataire
+                deleteTenant(tenantId);
+                
+                alert('Modifiez les informations et cliquez sur "Ajouter le locataire" pour sauvegarder');
+            }
         }
 
         function deleteTenant(tenantId) {
@@ -1995,20 +2159,46 @@
                 localStorage.setItem('tenants', JSON.stringify(tenants));
                 refreshTenantsDisplay();
                 refreshTenantSelect();
+                refreshAnalysisCharts();
             }
         }
 
-        function viewInvoice(invoiceNumber) {
-            alert(`Visualisation de la facture ${invoiceNumber} - À implémenter`);
+        function viewInvoice(invoiceId) {
+            const invoice = invoices.find(inv => inv.id === invoiceId);
+            if (invoice) {
+                // Remplir le formulaire avec les données de la facture
+                Object.keys(invoice).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.value = invoice[key];
+                    }
+                });
+                
+                // Mettre à jour l'aperçu
+                updateInvoicePreview(invoice, invoice.items, invoice.total);
+                document.getElementById('invoicePreview').style.display = 'block';
+                
+                // Basculer vers l'onglet création
+                document.querySelector('.tab[data-tab="create"]').click();
+            }
         }
 
-        function downloadInvoice(invoiceNumber) {
-            alert(`Téléchargement de la facture ${invoiceNumber} - À implémenter`);
+        function downloadInvoice(invoiceId) {
+            const invoice = invoices.find(inv => inv.id === invoiceId);
+            if (invoice) {
+                const dataStr = JSON.stringify(invoice, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `${invoice.invoiceNumber}.json`;
+                link.click();
+            }
         }
 
-        function deleteInvoice(invoiceNumber) {
+        function deleteInvoice(invoiceId) {
             if (confirm('Êtes-vous sûr de vouloir supprimer cette quittance ?')) {
-                invoices = invoices.filter(inv => inv.invoiceNumber !== invoiceNumber);
+                invoices = invoices.filter(inv => inv.id !== invoiceId);
                 localStorage.setItem('invoices', JSON.stringify(invoices));
                 refreshHistoryTable();
                 refreshAnalysisCharts();
