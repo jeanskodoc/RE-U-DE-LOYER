@@ -1197,6 +1197,7 @@
                 try {
                     localStorage.setItem('tenantBills', JSON.stringify(bills));
                     localStorage.setItem('lastSaveTime', new Date().toLocaleString());
+                    lastSaveTime = new Date().toLocaleString();
                     
                     // Mettre à jour l'indicateur de sauvegarde
                     const saveStatus = document.getElementById('saveStatus');
@@ -1334,6 +1335,8 @@
                 const today = new Date();
                 const lastMonth = new Date(today);
                 lastMonth.setMonth(today.getMonth() - 1);
+                const twoMonthsAgo = new Date(today);
+                twoMonthsAgo.setMonth(today.getMonth() - 2);
                 
                 const sampleBills = [
                     {
@@ -1387,6 +1390,32 @@
                         invoiceNumber: 'FACT-' + today.getFullYear() + String(today.getMonth()+1).padStart(2, '0') + String(today.getDate()).padStart(2, '0') + '-003',
                         paymentStatus: 'en_attente',
                         paymentDate: ''
+                    },
+                    {
+                        id: generateId(),
+                        type: 'loyer',
+                        date: lastMonth.toISOString().split('T')[0],
+                        amount: 75000,
+                        description: 'Loyer mensuel',
+                        dueDate: lastMonth.toISOString().split('T')[0],
+                        ownerName: 'M. KOLA',
+                        ownerContact: '+228 90 12 34 56',
+                        invoiceNumber: 'FACT-' + lastMonth.getFullYear() + String(lastMonth.getMonth()+1).padStart(2, '0') + '15-001',
+                        paymentStatus: 'paye',
+                        paymentDate: lastMonth.toISOString().split('T')[0]
+                    },
+                    {
+                        id: generateId(),
+                        type: 'loyer',
+                        date: twoMonthsAgo.toISOString().split('T')[0],
+                        amount: 70000,
+                        description: 'Loyer mensuel',
+                        dueDate: twoMonthsAgo.toISOString().split('T')[0],
+                        ownerName: 'M. KOLA',
+                        ownerContact: '+228 90 12 34 56',
+                        invoiceNumber: 'FACT-' + twoMonthsAgo.getFullYear() + String(twoMonthsAgo.getMonth()+1).padStart(2, '0') + '15-001',
+                        paymentStatus: 'paye',
+                        paymentDate: twoMonthsAgo.toISOString().split('T')[0]
                     }
                 ];
                 
@@ -1769,6 +1798,18 @@
                 const yearSelect = document.getElementById('analysisYear');
                 
                 yearSelect.innerHTML = '';
+                
+                // Ajouter les 3 dernières années si pas de données
+                if (years.length === 0) {
+                    const currentYear = new Date().getFullYear();
+                    for (let i = 0; i < 3; i++) {
+                        const year = currentYear - i;
+                        years.push(year.toString());
+                    }
+                }
+                
+                years.sort((a, b) => b - a); // Tri décroissant
+                
                 years.forEach(year => {
                     const option = document.createElement('option');
                     option.value = year;
@@ -1777,7 +1818,7 @@
                 });
                 
                 if (years.length > 0 && !yearSelect.value) {
-                    yearSelect.value = years[years.length - 1];
+                    yearSelect.value = years[0]; // Première année (la plus récente)
                 }
                 
                 const selectedYear = yearSelect.value || new Date().getFullYear().toString();
@@ -1789,6 +1830,9 @@
                 }
                 
                 const monthlyData = Array(12).fill(0);
+                const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                                   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                
                 bills.forEach(bill => {
                     const billYear = bill.date.substring(0, 4);
                     if (billYear === selectedYear) {
@@ -1796,8 +1840,6 @@
                         monthlyData[month] += bill.amount;
                     }
                 });
-                
-                const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
                 
                 window.monthlyExpensesChart = new Chart(monthlyCtx, {
                     type: 'bar',
@@ -1852,6 +1894,16 @@
                     }
                 });
                 
+                // Si pas de données pour l'année sélectionnée, utiliser toutes les données
+                if (Object.keys(typeData).length === 0) {
+                    bills.forEach(bill => {
+                        if (!typeData[bill.type]) {
+                            typeData[bill.type] = 0;
+                        }
+                        typeData[bill.type] += bill.amount;
+                    });
+                }
+                
                 const typeLabels = Object.keys(typeData).map(type => getBillTypeName(type));
                 const typeValues = Object.values(typeData);
                 const typeColors = Object.keys(typeData).map(type => getBillTypeColor(type));
@@ -1877,7 +1929,7 @@
                                     label: function(context) {
                                         const value = context.raw;
                                         const total = typeValues.reduce((a, b) => a + b, 0);
-                                        const percentage = Math.round((value / total) * 100);
+                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
                                         return `${typeLabels[context.dataIndex]}: ${formatCurrency(value)} (${percentage}%)`;
                                     }
                                 }
@@ -1896,54 +1948,71 @@
                 bills.forEach(bill => {
                     if (bill.type === 'loyer') {
                         const monthKey = bill.date.substring(0, 7);
-                        rentData[monthKey] = bill.amount;
+                        // Garder seulement le dernier loyer de chaque mois
+                        if (!rentData[monthKey] || new Date(bill.date) > new Date(rentData[monthKey].date)) {
+                            rentData[monthKey] = {
+                                amount: bill.amount,
+                                date: bill.date
+                            };
+                        }
                     }
                 });
                 
                 const rentMonths = Object.keys(rentData).sort();
-                const rentValues = rentMonths.map(month => rentData[month]);
+                const rentValues = rentMonths.map(month => rentData[month].amount);
                 const rentMonthNames = rentMonths.map(month => {
                     const date = new Date(month + '-01');
                     return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
                 });
                 
-                window.rentEvolutionChart = new Chart(rentCtx, {
-                    type: 'line',
-                    data: {
-                        labels: rentMonthNames,
-                        datasets: [{
-                            label: 'Loyer (FCFA)',
-                            data: rentValues,
-                            borderColor: '#e74c3c',
-                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: false,
-                                ticks: {
-                                    callback: function(value) {
-                                        return formatCurrency(value);
+                // Si pas de données de loyer, afficher un message
+                if (rentMonths.length === 0) {
+                    rentCtx.canvas.parentNode.innerHTML = `
+                        <h3>Évolution du loyer</h3>
+                        <p style="text-align: center; padding: 40px; color: #777;">
+                            <i class="fas fa-home" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                            Aucune donnée de loyer disponible pour l'analyse
+                        </p>
+                    `;
+                } else {
+                    window.rentEvolutionChart = new Chart(rentCtx, {
+                        type: 'line',
+                        data: {
+                            labels: rentMonthNames,
+                            datasets: [{
+                                label: 'Loyer (FCFA)',
+                                data: rentValues,
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: false,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return formatCurrency(value);
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return formatCurrency(context.raw);
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return formatCurrency(context.raw);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
             
             // Éditer une facture
@@ -1985,6 +2054,7 @@
                 
                 updateDashboard();
                 displayBills();
+                displayAnalysis(); // Mettre à jour l'analyse après suppression
             };
         });
     </script>
