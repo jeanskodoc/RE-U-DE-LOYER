@@ -948,8 +948,23 @@
             
             // Vérifier si l'utilisateur est déjà connecté
             if (localStorage.getItem('isAuthenticated') === 'true' && localStorage.getItem('currentUser')) {
-                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-                showApp(currentUser);
+                try {
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                    // Vérifier que l'utilisateur existe toujours dans la base
+                    if (users[currentUser.username]) {
+                        showApp(currentUser);
+                    } else {
+                        // Si l'utilisateur n'existe plus, déconnecter
+                        localStorage.removeItem('isAuthenticated');
+                        localStorage.removeItem('currentUser');
+                        showLogin();
+                    }
+                } catch (e) {
+                    // En cas d'erreur de parsing, déconnecter
+                    localStorage.removeItem('isAuthenticated');
+                    localStorage.removeItem('currentUser');
+                    showLogin();
+                }
             } else {
                 showLogin();
             }
@@ -958,21 +973,28 @@
             document.getElementById('loginForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                const username = document.getElementById('username').value;
+                const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value;
                 
-                if (users[username] && users[username].password === password) {
-                    const userData = {
-                        username: username,
-                        name: users[username].name,
-                        email: users[username].email
-                    };
-                    
-                    localStorage.setItem('isAuthenticated', 'true');
-                    localStorage.setItem('currentUser', JSON.stringify(userData));
-                    showApp(userData);
+                // Vérification plus robuste
+                if (username && password) {
+                    if (users[username] && users[username].password === password) {
+                        const userData = {
+                            username: username,
+                            name: users[username].name,
+                            email: users[username].email
+                        };
+                        
+                        localStorage.setItem('isAuthenticated', 'true');
+                        localStorage.setItem('currentUser', JSON.stringify(userData));
+                        showApp(userData);
+                    } else {
+                        document.getElementById('errorMessage').style.display = 'flex';
+                        // Effacer les champs après une erreur
+                        document.getElementById('password').value = '';
+                    }
                 } else {
-                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorMessage').style.display = 'flex';
                 }
             });
             
@@ -981,6 +1003,9 @@
                 localStorage.removeItem('isAuthenticated');
                 localStorage.removeItem('currentUser');
                 showLogin();
+                // Réinitialiser le formulaire de connexion
+                document.getElementById('loginForm').reset();
+                document.getElementById('errorMessage').style.display = 'none';
             });
             
             function showLogin() {
@@ -1003,13 +1028,22 @@
             }
             
             // Variables globales
-            let bills = JSON.parse(localStorage.getItem('tenantBills')) || [];
+            let bills = [];
             let currentBill = null;
             let autoSaveTimer = null;
             let lastSaveTime = localStorage.getItem('lastSaveTime') || '-';
             
             // Initialiser l'application
             function initApp() {
+                // Charger les factures depuis le localStorage
+                try {
+                    const storedBills = localStorage.getItem('tenantBills');
+                    bills = storedBills ? JSON.parse(storedBills) : [];
+                } catch (e) {
+                    console.error('Erreur lors du chargement des factures:', e);
+                    bills = [];
+                }
+                
                 // Initialiser la date du jour
                 initializeCurrentDate();
                 
@@ -1160,17 +1194,22 @@
             
             // Sauvegarder toutes les données
             function saveAllData() {
-                localStorage.setItem('tenantBills', JSON.stringify(bills));
-                localStorage.setItem('lastSaveTime', new Date().toLocaleString());
-                
-                // Mettre à jour l'indicateur de sauvegarde
-                const saveStatus = document.getElementById('saveStatus');
-                saveStatus.innerHTML = '<i class="fas fa-check-circle"></i> Sauvegardé';
-                
-                // Mettre à jour les informations de sauvegarde
-                updateBackupInfo();
-                
-                console.log('Données sauvegardées automatiquement');
+                try {
+                    localStorage.setItem('tenantBills', JSON.stringify(bills));
+                    localStorage.setItem('lastSaveTime', new Date().toLocaleString());
+                    
+                    // Mettre à jour l'indicateur de sauvegarde
+                    const saveStatus = document.getElementById('saveStatus');
+                    saveStatus.innerHTML = '<i class="fas fa-check-circle"></i> Sauvegardé';
+                    
+                    // Mettre à jour les informations de sauvegarde
+                    updateBackupInfo();
+                    
+                    console.log('Données sauvegardées automatiquement');
+                } catch (e) {
+                    console.error('Erreur lors de la sauvegarde:', e);
+                    alert('Erreur lors de la sauvegarde des données');
+                }
             }
             
             // Mettre à jour les informations de sauvegarde
@@ -1185,17 +1224,22 @@
             
             // Exporter les données
             function exportData() {
-                const dataStr = JSON.stringify(bills, null, 2);
-                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-                
-                const exportFileDefaultName = 'carnet-factures-' + new Date().toISOString().split('T')[0] + '.json';
-                
-                const linkElement = document.createElement('a');
-                linkElement.setAttribute('href', dataUri);
-                linkElement.setAttribute('download', exportFileDefaultName);
-                linkElement.click();
-                
-                alert('Données exportées avec succès');
+                try {
+                    const dataStr = JSON.stringify(bills, null, 2);
+                    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                    
+                    const exportFileDefaultName = 'carnet-factures-' + new Date().toISOString().split('T')[0] + '.json';
+                    
+                    const linkElement = document.createElement('a');
+                    linkElement.setAttribute('href', dataUri);
+                    linkElement.setAttribute('download', exportFileDefaultName);
+                    linkElement.click();
+                    
+                    alert('Données exportées avec succès');
+                } catch (e) {
+                    console.error('Erreur lors de l\'exportation:', e);
+                    alert('Erreur lors de l\'exportation des données');
+                }
             }
             
             // Importer des données
@@ -1237,12 +1281,17 @@
             function clearData() {
                 if (confirm('Êtes-vous sûr de vouloir effacer toutes vos données? Cette action est irréversible.')) {
                     bills = [];
-                    localStorage.removeItem('tenantBills');
-                    localStorage.removeItem('lastSaveTime');
-                    updateDashboard();
-                    displayBills();
-                    updateBackupInfo();
-                    alert('Toutes les données ont été effacées');
+                    try {
+                        localStorage.removeItem('tenantBills');
+                        localStorage.removeItem('lastSaveTime');
+                        updateDashboard();
+                        displayBills();
+                        updateBackupInfo();
+                        alert('Toutes les données ont été effacées');
+                    } catch (e) {
+                        console.error('Erreur lors de la suppression des données:', e);
+                        alert('Erreur lors de la suppression des données');
+                    }
                 }
             }
             
