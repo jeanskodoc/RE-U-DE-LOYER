@@ -411,6 +411,15 @@
             background-color: var(--light-bg);
         }
         
+        .amount-in-words {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: var(--light-bg);
+            border-radius: var(--radius);
+            font-style: italic;
+            text-align: center;
+        }
+        
         .bills-container {
             display: grid;
             grid-template-columns: 1fr;
@@ -533,6 +542,32 @@
             margin-top: 15px;
         }
         
+        .analysis-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .analysis-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .analysis-tab.active {
+            border-bottom-color: var(--primary-color);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .analysis-content {
+            display: none;
+        }
+        
+        .analysis-content.active {
+            display: block;
+        }
+        
         /* Styles pour les écrans plus larges */
         @media (min-width: 768px) {
             .login-container {
@@ -612,6 +647,10 @@
             }
             
             .backup-actions {
+                flex-direction: row;
+            }
+            
+            .analysis-tabs {
                 flex-direction: row;
             }
         }
@@ -842,6 +881,10 @@
                         </tfoot>
                     </table>
                     
+                    <div class="amount-in-words" id="previewAmountInWords">
+                        Arrêtée à la somme de: <strong>Zéro franc CFA</strong>
+                    </div>
+                    
                     <div class="invoice-footer">
                         <div class="signature-section">
                             <p>Statut: <span id="previewPaymentStatus"></span></p>
@@ -879,26 +922,63 @@
             <div class="analysis-section">
                 <h2><i class="fas fa-chart-bar"></i> Analyse des Dépenses</h2>
                 
-                <div class="month-selector">
-                    <label for="analysisYear">Année:</label>
-                    <select id="analysisYear">
-                        <!-- Options générées dynamiquement -->
-                    </select>
+                <div class="analysis-tabs">
+                    <div class="analysis-tab active" data-analysis="monthly">Mensuelle</div>
+                    <div class="analysis-tab" data-analysis="daily">Journalière</div>
+                    <div class="analysis-tab" data-analysis="annual">Annuelle</div>
                 </div>
                 
-                <div class="chart-container">
-                    <h3>Dépenses mensuelles</h3>
-                    <canvas id="monthlyExpensesChart"></canvas>
+                <div id="monthly-analysis" class="analysis-content active">
+                    <div class="month-selector">
+                        <label for="analysisYear">Année:</label>
+                        <select id="analysisYear">
+                            <!-- Options générées dynamiquement -->
+                        </select>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Dépenses mensuelles</h3>
+                        <canvas id="monthlyExpensesChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Répartition par type de dépense</h3>
+                        <canvas id="expensesByTypeChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Évolution du loyer</h3>
+                        <canvas id="rentEvolutionChart"></canvas>
+                    </div>
                 </div>
                 
-                <div class="chart-container">
-                    <h3>Répartition par type de dépense</h3>
-                    <canvas id="expensesByTypeChart"></canvas>
+                <div id="daily-analysis" class="analysis-content">
+                    <div class="month-selector">
+                        <label for="dailyAnalysisMonth">Mois:</label>
+                        <input type="month" id="dailyAnalysisMonth">
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Dépenses journalières</h3>
+                        <canvas id="dailyExpensesChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Répartition des dépenses du mois</h3>
+                        <canvas id="dailyExpensesPieChart"></canvas>
+                    </div>
                 </div>
                 
-                <div class="chart-container">
-                    <h3>Évolution du loyer</h3>
-                    <canvas id="rentEvolutionChart"></canvas>
+                <div id="annual-analysis" class="analysis-content">
+                    <div class="chart-container">
+                        <h3>Dépenses annuelles</h3>
+                        <canvas id="annualExpensesChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Comparaison annuelle</h3>
+                        <canvas id="annualComparisonChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1090,6 +1170,26 @@
                     });
                 });
                 
+                // Gestion des onglets d'analyse
+                document.querySelectorAll('.analysis-tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        document.querySelectorAll('.analysis-tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.analysis-content').forEach(c => c.classList.remove('active'));
+                        
+                        this.classList.add('active');
+                        document.getElementById(this.getAttribute('data-analysis') + '-analysis').classList.add('active');
+                        
+                        // Mettre à jour l'analyse spécifique
+                        if (this.getAttribute('data-analysis') === 'monthly') {
+                            displayMonthlyAnalysis();
+                        } else if (this.getAttribute('data-analysis') === 'daily') {
+                            displayDailyAnalysis();
+                        } else if (this.getAttribute('data-analysis') === 'annual') {
+                            displayAnnualAnalysis();
+                        }
+                    });
+                });
+                
                 // Gestion du formulaire de facture
                 document.getElementById('billForm').addEventListener('submit', function(e) {
                     e.preventDefault();
@@ -1113,6 +1213,8 @@
                         document.getElementById('billPreview').style.display = 'none';
                         updateDashboard();
                         displayBills();
+                        // Mettre à jour toutes les analyses
+                        updateAllAnalyses();
                     }
                 });
                 
@@ -1134,7 +1236,12 @@
                 
                 // Année d'analyse
                 document.getElementById('analysisYear').addEventListener('change', function() {
-                    displayAnalysis();
+                    displayMonthlyAnalysis();
+                });
+                
+                // Mois d'analyse journalière
+                document.getElementById('dailyAnalysisMonth').addEventListener('change', function() {
+                    displayDailyAnalysis();
                 });
                 
                 // Exportation des données
@@ -1263,6 +1370,7 @@
                                 saveAllData();
                                 updateDashboard();
                                 displayBills();
+                                updateAllAnalyses();
                                 alert('Données importées avec succès! ' + bills.length + ' factures chargées.');
                             } else {
                                 alert('Format de fichier invalide');
@@ -1288,6 +1396,7 @@
                         updateDashboard();
                         displayBills();
                         updateBackupInfo();
+                        updateAllAnalyses();
                         alert('Toutes les données ont été effacées');
                     } catch (e) {
                         console.error('Erreur lors de la suppression des données:', e);
@@ -1442,6 +1551,119 @@
                 return date.toLocaleDateString('fr-FR');
             }
             
+            // Convertir un montant en lettres
+            function amountToWords(amount) {
+                if (amount === 0) return 'zéro';
+                
+                const units = ['', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf'];
+                const teens = ['dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'];
+                const tens = ['', 'dix', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante-dix', 'quatre-vingt', 'quatre-vingt-dix'];
+                
+                let words = '';
+                let remaining = Math.floor(amount);
+                
+                // Milliers
+                if (remaining >= 1000) {
+                    const thousands = Math.floor(remaining / 1000);
+                    if (thousands === 1) {
+                        words += 'mille ';
+                    } else {
+                        words += numberToWords(thousands) + ' mille ';
+                    }
+                    remaining %= 1000;
+                }
+                
+                // Centaines
+                if (remaining >= 100) {
+                    const hundreds = Math.floor(remaining / 100);
+                    if (hundreds === 1) {
+                        words += 'cent ';
+                    } else {
+                        words += units[hundreds] + ' cent ';
+                    }
+                    remaining %= 100;
+                }
+                
+                // Dixaines et unités
+                if (remaining > 0) {
+                    if (remaining < 10) {
+                        words += units[remaining];
+                    } else if (remaining < 20) {
+                        words += teens[remaining - 10];
+                    } else {
+                        const ten = Math.floor(remaining / 10);
+                        const unit = remaining % 10;
+                        
+                        if (ten === 7 || ten === 9) {
+                            // Soixante-dix et quatre-vingt-dix
+                            words += tens[ten - 1] + '-' + teens[unit];
+                        } else {
+                            words += tens[ten];
+                            if (unit > 0) {
+                                if (unit === 1 && ten !== 8) {
+                                    words += ' et ' + units[unit];
+                                } else {
+                                    words += '-' + units[unit];
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return words.trim() + ' franc' + (amount >= 2 ? 's' : '') + ' CFA';
+            }
+            
+            // Fonction récursive pour les nombres
+            function numberToWords(num) {
+                if (num === 0) return 'zéro';
+                
+                const units = ['', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf'];
+                const teens = ['dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'];
+                const tens = ['', 'dix', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante-dix', 'quatre-vingt', 'quatre-vingt-dix'];
+                
+                let words = '';
+                let remaining = num;
+                
+                // Centaines
+                if (remaining >= 100) {
+                    const hundreds = Math.floor(remaining / 100);
+                    if (hundreds === 1) {
+                        words += 'cent';
+                    } else {
+                        words += units[hundreds] + ' cent';
+                    }
+                    remaining %= 100;
+                    if (remaining > 0) words += ' ';
+                }
+                
+                // Dixaines et unités
+                if (remaining > 0) {
+                    if (remaining < 10) {
+                        words += units[remaining];
+                    } else if (remaining < 20) {
+                        words += teens[remaining - 10];
+                    } else {
+                        const ten = Math.floor(remaining / 10);
+                        const unit = remaining % 10;
+                        
+                        if (ten === 7 || ten === 9) {
+                            words += tens[ten - 1] + '-' + teens[unit];
+                        } else {
+                            words += tens[ten];
+                            if (unit > 0) {
+                                if (unit === 1 && ten !== 8) {
+                                    words += ' et ' + units[unit];
+                                } else {
+                                    words += '-' + units[unit];
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return words;
+            }
+            
             // Obtenir le nom du type de facture
             function getBillTypeName(type) {
                 const types = {
@@ -1541,6 +1763,10 @@
                 
                 document.getElementById('previewBillTotal').textContent = formatCurrency(bill.amount);
                 
+                // Ajouter le montant en lettres
+                const amountInWords = amountToWords(bill.amount);
+                document.getElementById('previewAmountInWords').innerHTML = `Arrêtée à la somme de: <strong>${amountInWords}</strong>`;
+                
                 document.getElementById('billPreview').style.display = 'block';
                 document.getElementById('billPreview').scrollIntoView({ behavior: 'smooth' });
             }
@@ -1549,6 +1775,16 @@
             function saveBillToStorage(bill) {
                 bills.push(bill);
                 saveAllData();
+                // Mettre à jour toutes les analyses après sauvegarde
+                updateAllAnalyses();
+            }
+            
+            // Mettre à jour toutes les analyses
+            function updateAllAnalyses() {
+                updateDashboard();
+                if (document.getElementById('analysis-tab').classList.contains('active')) {
+                    displayAnalysis();
+                }
             }
             
             // Mettre à jour le tableau de bord
@@ -1793,6 +2029,19 @@
             
             // Afficher l'analyse des dépenses
             function displayAnalysis() {
+                const activeTab = document.querySelector('.analysis-tab.active').getAttribute('data-analysis');
+                
+                if (activeTab === 'monthly') {
+                    displayMonthlyAnalysis();
+                } else if (activeTab === 'daily') {
+                    displayDailyAnalysis();
+                } else if (activeTab === 'annual') {
+                    displayAnnualAnalysis();
+                }
+            }
+            
+            // Afficher l'analyse mensuelle
+            function displayMonthlyAnalysis() {
                 // Initialiser les années disponibles
                 const years = [...new Set(bills.map(bill => bill.date.substring(0, 4)))];
                 const yearSelect = document.getElementById('analysisYear');
@@ -2015,6 +2264,246 @@
                 }
             }
             
+            // Afficher l'analyse journalière
+            function displayDailyAnalysis() {
+                const monthInput = document.getElementById('dailyAnalysisMonth');
+                const currentMonth = new Date().toISOString().substring(0, 7);
+                
+                if (!monthInput.value) {
+                    monthInput.value = currentMonth;
+                }
+                
+                const selectedMonth = monthInput.value;
+                
+                // Graphique des dépenses journalières
+                const dailyCtx = document.getElementById('dailyExpensesChart').getContext('2d');
+                if (window.dailyExpensesChart) {
+                    window.dailyExpensesChart.destroy();
+                }
+                
+                // Obtenir le nombre de jours dans le mois sélectionné
+                const year = parseInt(selectedMonth.substring(0, 4));
+                const month = parseInt(selectedMonth.substring(5, 7));
+                const daysInMonth = new Date(year, month, 0).getDate();
+                
+                const dailyData = Array(daysInMonth).fill(0);
+                const dayLabels = Array.from({length: daysInMonth}, (_, i) => i + 1);
+                
+                bills.forEach(bill => {
+                    if (bill.date.startsWith(selectedMonth)) {
+                        const day = parseInt(bill.date.substring(8, 10)) - 1;
+                        dailyData[day] += bill.amount;
+                    }
+                });
+                
+                window.dailyExpensesChart = new Chart(dailyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dayLabels,
+                        datasets: [{
+                            label: 'Dépenses (FCFA)',
+                            data: dailyData,
+                            backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                            borderColor: '#27ae60',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return formatCurrency(context.raw);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Graphique de répartition des dépenses du mois
+                const dailyPieCtx = document.getElementById('dailyExpensesPieChart').getContext('2d');
+                if (window.dailyExpensesPieChart) {
+                    window.dailyExpensesPieChart.destroy();
+                }
+                
+                const dailyTypeData = {};
+                bills.forEach(bill => {
+                    if (bill.date.startsWith(selectedMonth)) {
+                        if (!dailyTypeData[bill.type]) {
+                            dailyTypeData[bill.type] = 0;
+                        }
+                        dailyTypeData[bill.type] += bill.amount;
+                    }
+                });
+                
+                const dailyTypeLabels = Object.keys(dailyTypeData).map(type => getBillTypeName(type));
+                const dailyTypeValues = Object.values(dailyTypeData);
+                const dailyTypeColors = Object.keys(dailyTypeData).map(type => getBillTypeColor(type));
+                
+                window.dailyExpensesPieChart = new Chart(dailyPieCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: dailyTypeLabels,
+                        datasets: [{
+                            data: dailyTypeValues,
+                            backgroundColor: dailyTypeColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'right'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        const total = dailyTypeValues.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                        return `${dailyTypeLabels[context.dataIndex]}: ${formatCurrency(value)} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Afficher l'analyse annuelle
+            function displayAnnualAnalysis() {
+                // Graphique des dépenses annuelles
+                const annualCtx = document.getElementById('annualExpensesChart').getContext('2d');
+                if (window.annualExpensesChart) {
+                    window.annualExpensesChart.destroy();
+                }
+                
+                const annualData = {};
+                bills.forEach(bill => {
+                    const year = bill.date.substring(0, 4);
+                    if (!annualData[year]) {
+                        annualData[year] = 0;
+                    }
+                    annualData[year] += bill.amount;
+                });
+                
+                const annualLabels = Object.keys(annualData).sort();
+                const annualValues = annualLabels.map(year => annualData[year]);
+                
+                window.annualExpensesChart = new Chart(annualCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: annualLabels,
+                        datasets: [{
+                            label: 'Dépenses annuelles (FCFA)',
+                            data: annualValues,
+                            backgroundColor: 'rgba(155, 89, 182, 0.7)',
+                            borderColor: '#8e44ad',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return formatCurrency(context.raw);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Graphique de comparaison annuelle
+                const comparisonCtx = document.getElementById('annualComparisonChart').getContext('2d');
+                if (window.annualComparisonChart) {
+                    window.annualComparisonChart.destroy();
+                }
+                
+                const annualTypeData = {};
+                bills.forEach(bill => {
+                    const year = bill.date.substring(0, 4);
+                    if (!annualTypeData[year]) {
+                        annualTypeData[year] = {};
+                    }
+                    if (!annualTypeData[year][bill.type]) {
+                        annualTypeData[year][bill.type] = 0;
+                    }
+                    annualTypeData[year][bill.type] += bill.amount;
+                });
+                
+                const years = Object.keys(annualTypeData).sort();
+                const types = [...new Set(bills.map(bill => bill.type))];
+                const datasets = types.map(type => {
+                    return {
+                        label: getBillTypeName(type),
+                        data: years.map(year => annualTypeData[year][type] || 0),
+                        backgroundColor: getBillTypeColor(type),
+                        borderColor: getBillTypeColor(type),
+                        borderWidth: 1
+                    };
+                });
+                
+                window.annualComparisonChart = new Chart(comparisonCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: years,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                stacked: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            },
+                            x: {
+                                stacked: true
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
             // Éditer une facture
             window.editBill = function(id) {
                 const bill = bills.find(bill => bill.id === id);
@@ -2054,7 +2543,7 @@
                 
                 updateDashboard();
                 displayBills();
-                displayAnalysis(); // Mettre à jour l'analyse après suppression
+                updateAllAnalyses(); // Mettre à jour toutes les analyses après suppression
             };
         });
     </script>
