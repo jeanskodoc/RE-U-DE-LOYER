@@ -236,23 +236,160 @@
             font-style: italic;
         }
 
-        @media (max-width: 768px) {
+        /* Styles pour les écrans mobiles (jusqu'à 480px) */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
             .container {
                 grid-template-columns: 1fr;
+                gap: 0;
+                border-radius: 10px;
+            }
+            
+            .form-section {
+                padding: 25px 20px;
             }
             
             .info-section {
+                padding: 25px 20px;
                 order: -1;
-                padding: 30px;
+            }
+            
+            h1 {
+                font-size: 22px;
+                text-align: center;
+            }
+            
+            h2 {
+                font-size: 20px;
+                text-align: center;
+            }
+            
+            .tagline {
+                text-align: center;
+                font-size: 14px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .steps {
+                margin: 20px 0;
+            }
+            
+            .step-text {
+                font-size: 10px;
+            }
+            
+            .step:not(:last-child)::after {
+                right: -40%;
+            }
+            
+            .benefits-list li {
+                font-size: 14px;
+            }
+            
+            .testimonial {
+                padding: 15px;
+                font-size: 14px;
+            }
+            
+            .contact-info {
+                font-size: 14px;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 15px;
+            }
+            
+            .logo {
+                justify-content: center;
+                font-size: 20px;
+            }
+            
+            .logo-icon {
+                font-size: 24px;
+            }
+        }
+
+        /* Styles pour les tablettes et écrans moyens (481px à 768px) */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 0;
             }
             
             .form-section {
                 padding: 30px;
             }
             
+            .info-section {
+                padding: 30px;
+                order: -1;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            h2 {
+                font-size: 22px;
+            }
+            
             .form-row {
-                flex-direction: column;
-                gap: 0;
+                flex-direction: row;
+            }
+            
+            .steps {
+                margin: 20px 0;
+            }
+            
+            .step-text {
+                font-size: 11px;
+            }
+            
+            .step:not(:last-child)::after {
+                right: -45%;
+            }
+        }
+
+        /* Styles pour les écrans plus larges (769px à 1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                max-width: 95%;
+                gap: 20px;
+            }
+            
+            .form-section {
+                padding: 30px;
+            }
+            
+            .info-section {
+                padding: 30px;
+            }
+            
+            h1 {
+                font-size: 26px;
+            }
+            
+            h2 {
+                font-size: 22px;
+            }
+            
+            .steps {
+                margin: 20px 0;
+            }
+        }
+
+        /* Styles pour les grands écrans (1025px et plus) */
+        @media (min-width: 1025px) {
+            .container {
+                max-width: 1000px;
             }
         }
     </style>
