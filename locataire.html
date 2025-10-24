@@ -41,7 +41,7 @@
         
         .login-container {
             background: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             width: 90%;
@@ -148,6 +148,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         header h1 {
@@ -524,10 +526,6 @@
             margin-bottom: 20px;
         }
         
-        .month-selector label {
-            font-weight: 500;
-        }
-        
         .backup-section {
             margin-top: 30px;
             padding: 20px;
@@ -546,12 +544,14 @@
             display: flex;
             margin-bottom: 20px;
             border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
         }
         
         .analysis-tab {
             padding: 10px 20px;
             cursor: pointer;
             border-bottom: 3px solid transparent;
+            white-space: nowrap;
         }
         
         .analysis-tab.active {
@@ -568,8 +568,204 @@
             display: block;
         }
         
-        /* Styles pour les écrans plus larges */
-        @media (min-width: 768px) {
+        /* Styles pour les écrans mobiles (jusqu'à 480px) */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 20px;
+            }
+            
+            .login-container h1 {
+                font-size: 1.3rem;
+            }
+            
+            header {
+                padding: 12px;
+            }
+            
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .logout-button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .tabs {
+                flex-wrap: nowrap;
+            }
+            
+            .tab {
+                padding: 10px 12px;
+                min-width: 100px;
+                font-size: 14px;
+            }
+            
+            .tab i {
+                font-size: 14px;
+            }
+            
+            .tab-content {
+                padding: 15px;
+            }
+            
+            .form-section h2 {
+                font-size: 1.2rem;
+            }
+            
+            .form-row {
+                gap: 10px;
+            }
+            
+            .form-group input, .form-group select, .form-group textarea {
+                padding: 10px 12px;
+                font-size: 16px; /* Éviter le zoom sur iOS */
+            }
+            
+            button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .summary-card {
+                padding: 12px;
+            }
+            
+            .summary-card .value {
+                font-size: 18px;
+            }
+            
+            .chart-container {
+                padding: 15px;
+            }
+            
+            .invoice-container {
+                padding: 15px;
+            }
+            
+            .invoice-table {
+                min-width: 300px;
+            }
+            
+            .invoice-table th, .invoice-table td {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+            
+            .bill-card {
+                padding: 15px;
+            }
+            
+            .bill-actions {
+                flex-direction: column;
+            }
+            
+            .analysis-tabs {
+                flex-wrap: nowrap;
+            }
+            
+            .analysis-tab {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+            
+            .backup-actions {
+                flex-direction: column;
+            }
+        }
+        
+        /* Styles pour les tablettes et écrans moyens (481px à 768px) */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .login-container {
+                padding: 30px;
+            }
+            
+            header {
+                padding: 15px;
+            }
+            
+            .header-top {
+                flex-direction: row;
+            }
+            
+            .user-info {
+                flex-direction: row;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1 0 50%;
+                min-width: 140px;
+            }
+            
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .actions button {
+                flex: 1;
+                min-width: 150px;
+            }
+            
+            .bill-actions {
+                flex-direction: row;
+            }
+            
+            .bill-actions button {
+                flex: 1;
+            }
+            
+            .bills-container {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+            
+            .backup-actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .backup-actions button {
+                flex: 1;
+                min-width: 150px;
+            }
+        }
+        
+        /* Styles pour les écrans plus larges (769px à 1024px) */
+        @media (min-width: 769px) {
             .login-container {
                 padding: 40px;
             }
@@ -655,7 +851,8 @@
             }
         }
         
-        @media (min-width: 992px) {
+        /* Styles pour les grands écrans (1025px et plus) */
+        @media (min-width: 1025px) {
             .summary-cards {
                 grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             }
@@ -1006,6 +1203,7 @@
     </div>
 
     <script>
+        // Le code JavaScript reste inchangé car il n'a pas besoin d'adaptation responsive
         document.addEventListener('DOMContentLoaded', function() {
             // Comptes utilisateurs pré-enregistrés
             const users = {
