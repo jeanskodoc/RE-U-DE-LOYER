@@ -57,6 +57,11 @@
             gap: 10px;
         }
 
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
         .tagline {
             font-size: 20px;
             margin-bottom: 30px;
@@ -346,7 +351,36 @@
             font-size: 14px;
         }
 
-        /* Responsive */
+        /* Responsive Design */
+        /* Tablettes (écrans moyens) */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            header {
+                padding: 60px 0 40px;
+            }
+            
+            header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .advantages, .features, .testimonials, .cta {
+                padding: 60px 0;
+            }
+            
+            .section-title {
+                font-size: 32px;
+                margin-bottom: 40px;
+            }
+            
+            .features-container {
+                gap: 40px;
+            }
+        }
+
+        /* Tablettes petites et grands mobiles */
         @media (max-width: 768px) {
             .features-container {
                 grid-template-columns: 1fr;
@@ -364,6 +398,158 @@
             
             .section-title {
                 font-size: 28px;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .tagline {
+                font-size: 18px;
+            }
+            
+            .logo {
+                font-size: 30px;
+            }
+            
+            .advantages-grid, .testimonials-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .advantage-card, .testimonial-card {
+                padding: 20px;
+            }
+            
+            .advantage-icon {
+                font-size: 40px;
+            }
+            
+            .cta {
+                padding: 60px 0;
+            }
+            
+            .cta h2 {
+                font-size: 28px;
+            }
+            
+            .cta p {
+                font-size: 16px;
+            }
+            
+            .features-list li {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .feature-icon {
+                margin: 0 auto;
+            }
+        }
+
+        /* Mobiles (écrans petits) */
+        @media (max-width: 480px) {
+            header {
+                padding: 40px 0 30px;
+            }
+            
+            header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .tagline {
+                font-size: 16px;
+            }
+            
+            .logo {
+                font-size: 26px;
+            }
+            
+            .advantages, .features, .testimonials {
+                padding: 40px 0;
+            }
+            
+            .section-title {
+                font-size: 24px;
+                margin-bottom: 30px;
+            }
+            
+            .advantage-card, .testimonial-card {
+                padding: 15px;
+            }
+            
+            .advantage-icon {
+                font-size: 35px;
+            }
+            
+            .advantage-title {
+                font-size: 18px;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .btn {
+                padding: 12px 25px;
+                font-size: 14px;
+                min-width: auto;
+            }
+            
+            .cta h2 {
+                font-size: 24px;
+            }
+            
+            .cta p {
+                font-size: 14px;
+            }
+            
+            .testimonial-author {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .author-avatar {
+                margin: 0 auto;
+            }
+        }
+
+        /* Très petits écrans */
+        @media (max-width: 320px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .tagline {
+                font-size: 14px;
+            }
+            
+            .logo {
+                font-size: 22px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+            
+            .section-title {
+                font-size: 22px;
+            }
+            
+            .advantage-card, .testimonial-card {
+                padding: 12px;
+            }
+            
+            .advantage-icon {
+                font-size: 30px;
             }
         }
     </style>
